@@ -136,6 +136,17 @@ extern "C" {
   }
 
 /**
+ * Achives the same as SIZE_T_TO_INT_OR_EXIT, but returns OQS_ERROR instead of exiting the program.
+ */
+#define SIZE_T_TO_INT_OR_RETURN(size_t_var_name, int_var_name)                 \
+  int int_var_name = 0;                                                        \
+  if (size_t_var_name <= INT_MAX) {                                            \
+    int_var_name = (int)size_t_var_name;                                       \
+  } else {                                                                     \
+    return OQS_ERROR;                                                          \
+  }
+
+/**
  * Defines which functions should be exposed outside the LibOQS library
  *
  * By default the visibility of all the symbols is defined to "hidden"
