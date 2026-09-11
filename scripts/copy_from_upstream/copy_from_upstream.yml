@@ -112,7 +112,7 @@ upstreams:
   - name: sdith
     git_url: https://github.com/owaldron/sdith
     git_branch: owaldron/test/init-sandbox
-    git_commit: 93c1f63844d15c65662e87e317e367f9be87e312
+    git_commit: cb61ee0235815b652b72e79088bed2cc3ef350cb
     sig_scheme_path: '.'
     sig_meta_path: 'integration/liboqs/META_{pretty_name_full}.yml'
     common_meta_path: 'integration/liboqs/META_lib.yml'
