@@ -15,6 +15,7 @@ python3 copy_from_upstream.py libjade     # import libjade (Jasmin) implementati
 **Flags:**
 - `-k` / `--keep_data` — keep cloned upstream repos in `repos/` after completion
 - `-d` / `--delete` — delete untracked files from implementation directories
+- `-l NAME` / `--local_upstream NAME` — use the working tree in `repos/NAME` as-is (no git fetch/reset, no patches) and never delete it; repeatable. Useful for iterating on an upstream's integration files without committing
 - `-v N` / `--verbosity N` — set debug output level
 
 ## Configuration

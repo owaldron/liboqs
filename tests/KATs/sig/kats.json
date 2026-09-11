@@ -91,6 +91,9 @@
     "all": "31aebc803483ef47be9e0249e9105a08a8f1660bf0d6eca5051221fc04477e05",
     "single": "38c8e18ffe94cdc331294cb05b0e28b8b0cc7903db5331cee4c88cb84e61450a"
   },
+  "SDitH3-L1-gf2-short": {
+    "single": "9a196e7fb32fbc93757dc2d8dc1924460eab66303c0c08aeb8b798fb8d8f8cf3"
+  },
   "SNOVA_24_5_4": {
     "all": "0958f4433311079eb8192fc65fddc3ca0b5f79dc22f7a2b34690741d182ccdd1",
     "single": "2759723cf44a3122df1d243132474255302edd2c7eb492986a4150c0099fa6fa"
@@ -282,5 +285,8 @@
   "mqom3_cat5_gf2_shorter_ot": {
     "all": "517a1a5fa9fa6406a0d239ae0f83bed80fa6243ea60db884b36bf72c192c5df1",
     "single": "1965d73d16cb4aead0c8e8d5a6b64a4904ca48f1b720d80d5199ed47b9dfbdc2"
+  },
+  "sdith3-l1-gf2-short": {
+    "single": "9a196e7fb32fbc93757dc2d8dc1924460eab66303c0c08aeb8b798fb8d8f8cf3"
   }
 }
