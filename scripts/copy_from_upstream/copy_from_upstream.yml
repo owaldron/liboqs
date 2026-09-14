@@ -112,10 +112,10 @@ upstreams:
   - name: sdith
     git_url: https://github.com/owaldron/sdith
     git_branch: owaldron/test/init-sandbox
-    git_commit: e75c36fbf1a039cc69bbf62223730933a80ee138
+    git_commit: 9bdbc98da3fa314ad55e8fe5e8df09aa51e78e68
     sig_scheme_path: '.'
-    sig_meta_path: 'integration/liboqs/META_{pretty_name_full}.yml'
-    common_meta_path: 'integration/liboqs/META_lib.yml'
+    sig_meta_path: 'integration/liboqs/schemes/META_{pretty_name_full}.yml'
+    common_meta_path: 'integration/liboqs/META_Common.yml'
 kems:
   -
     name: classic_mceliece
@@ -628,11 +628,16 @@ sigs:
         signed_msg_order: msg_then_sig
   -
     name: sdith
-    default_implementation: default
+    default_implementation: ref
     upstream_location: sdith
     schemes:
       -
         scheme: "sdith3_l1_gf2_short"
         pqclean_scheme: sdith3_l1_gf2_short
         pretty_name_full: SDitH3-L1-gf2-short
+        signed_msg_order: msg_then_sig
+      -
+        scheme: "sdith3_l1_gf2_fast"
+        pqclean_scheme: sdith3_l1_gf2_fast
+        pretty_name_full: SDitH3-L1-gf2-fast
         signed_msg_order: msg_then_sig

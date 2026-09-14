@@ -91,8 +91,13 @@
     "all": "31aebc803483ef47be9e0249e9105a08a8f1660bf0d6eca5051221fc04477e05",
     "single": "38c8e18ffe94cdc331294cb05b0e28b8b0cc7903db5331cee4c88cb84e61450a"
   },
+  "SDitH3-L1-gf2-fast": {
+    "all": "8b3b847405bb92a4140af6b0c03dfbd9629732d93015e7dd429e233c00e0ddb2",
+    "single": "41ccb6bad2eefe684dca736393e8c29bec7f2f3672492df6cff17c84f333cc03"
+  },
   "SDitH3-L1-gf2-short": {
-    "single": "9a196e7fb32fbc93757dc2d8dc1924460eab66303c0c08aeb8b798fb8d8f8cf3"
+    "all": "873711fb0690ae4ab5e40674e5450ce1113999aea5aaf35a7e5e2f72fb5c0537",
+    "single": "d50d495fd8a0f2cb0463fcd3aef1398cf84b94bf0aff0fd69b5a1026b47e2047"
   },
   "SNOVA_24_5_4": {
     "all": "0958f4433311079eb8192fc65fddc3ca0b5f79dc22f7a2b34690741d182ccdd1",
@@ -285,8 +290,5 @@
   "mqom3_cat5_gf2_shorter_ot": {
     "all": "517a1a5fa9fa6406a0d239ae0f83bed80fa6243ea60db884b36bf72c192c5df1",
     "single": "1965d73d16cb4aead0c8e8d5a6b64a4904ca48f1b720d80d5199ed47b9dfbdc2"
-  },
-  "sdith3-l1-gf2-short": {
-    "single": "9a196e7fb32fbc93757dc2d8dc1924460eab66303c0c08aeb8b798fb8d8f8cf3"
   }
 }

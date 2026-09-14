@@ -32,20 +32,20 @@ OQS_SIG *OQS_SIG_sdith_sdith3_l1_gf2_short_new(void) {
 	return sig;
 }
 
-extern int sdith3_l1_gf2_short_crypto_sign_keypair(uint8_t *pk, uint8_t *sk);
-extern int sdith3_l1_gf2_short_crypto_sign_sign(uint8_t *sig, size_t *siglen, const uint8_t *m, size_t mlen, const uint8_t *sk);
-extern int sdith3_l1_gf2_short_crypto_sign_verify(const uint8_t *sig, size_t siglen, const uint8_t *m, size_t mlen, const uint8_t *pk);
+extern int sdith3_pubapi_l1_gf2_short_crypto_sign_keypair(uint8_t *pk, uint8_t *sk);
+extern int sdith3_pubapi_l1_gf2_short_crypto_sign_sign(uint8_t *sig, size_t *siglen, const uint8_t *m, size_t mlen, const uint8_t *sk);
+extern int sdith3_pubapi_l1_gf2_short_crypto_sign_verify(const uint8_t *sig, size_t siglen, const uint8_t *m, size_t mlen, const uint8_t *pk);
 
 OQS_API OQS_STATUS OQS_SIG_sdith_sdith3_l1_gf2_short_keypair(uint8_t *public_key, uint8_t *secret_key) {
-	return (OQS_STATUS) sdith3_l1_gf2_short_crypto_sign_keypair(public_key, secret_key);
+	return (OQS_STATUS) sdith3_pubapi_l1_gf2_short_crypto_sign_keypair(public_key, secret_key);
 }
 
 OQS_API OQS_STATUS OQS_SIG_sdith_sdith3_l1_gf2_short_sign(uint8_t *signature, size_t *signature_len, const uint8_t *message, size_t message_len, const uint8_t *secret_key) {
-	return (OQS_STATUS) sdith3_l1_gf2_short_crypto_sign_sign(signature, signature_len, message, message_len, secret_key);
+	return (OQS_STATUS) sdith3_pubapi_l1_gf2_short_crypto_sign_sign(signature, signature_len, message, message_len, secret_key);
 }
 
 OQS_API OQS_STATUS OQS_SIG_sdith_sdith3_l1_gf2_short_verify(const uint8_t *message, size_t message_len, const uint8_t *signature, size_t signature_len, const uint8_t *public_key) {
-	return (OQS_STATUS) sdith3_l1_gf2_short_crypto_sign_verify(signature, signature_len, message, message_len, public_key);
+	return (OQS_STATUS) sdith3_pubapi_l1_gf2_short_crypto_sign_verify(signature, signature_len, message, message_len, public_key);
 }
 
 OQS_API OQS_STATUS OQS_SIG_sdith_sdith3_l1_gf2_short_sign_with_ctx_str(uint8_t *signature, size_t *signature_len, const uint8_t *message, size_t message_len, const uint8_t *ctx_str, size_t ctx_str_len, const uint8_t *secret_key) {
