@@ -95,9 +95,17 @@
     "all": "8b3b847405bb92a4140af6b0c03dfbd9629732d93015e7dd429e233c00e0ddb2",
     "single": "41ccb6bad2eefe684dca736393e8c29bec7f2f3672492df6cff17c84f333cc03"
   },
+  "SDitH3-L1-gf2-fast-cipherpow": {
+    "all": "893dbf70bbb7e7d5ff870d9d40da846e297ac5c69648d80118ee02e54bb47d58",
+    "single": "ce37d051dba74715aa3b5286970b688e2828a685279630e0ceac68b79c2e5607"
+  },
   "SDitH3-L1-gf2-short": {
     "all": "873711fb0690ae4ab5e40674e5450ce1113999aea5aaf35a7e5e2f72fb5c0537",
     "single": "d50d495fd8a0f2cb0463fcd3aef1398cf84b94bf0aff0fd69b5a1026b47e2047"
+  },
+  "SDitH3-L1-gf2-short-cipherpow": {
+    "all": "5772f0d8473f9408001506db63b962ca9b2c7d12fcce60c5f73369d5e92b39cd",
+    "single": "cc0d9688a9c4b5f99e90746657da5cdd1804b5012b3c934975599512d5061e4c"
   },
   "SNOVA_24_5_4": {
     "all": "0958f4433311079eb8192fc65fddc3ca0b5f79dc22f7a2b34690741d182ccdd1",

@@ -182,8 +182,12 @@ extern "C" {
 #define OQS_SIG_alg_mqom_mqom3_cat5_gf2_shorter_ot "mqom3_cat5_gf2_shorter_ot"
 /** Algorithm identifier for SDitH3-L1-gf2-short */
 #define OQS_SIG_alg_sdith_sdith3_l1_gf2_short "SDitH3-L1-gf2-short"
+/** Algorithm identifier for SDitH3-L1-gf2-short-cipherpow */
+#define OQS_SIG_alg_sdith_sdith3_l1_gf2_short_cipherpow "SDitH3-L1-gf2-short-cipherpow"
 /** Algorithm identifier for SDitH3-L1-gf2-fast */
 #define OQS_SIG_alg_sdith_sdith3_l1_gf2_fast "SDitH3-L1-gf2-fast"
+/** Algorithm identifier for SDitH3-L1-gf2-fast-cipherpow */
+#define OQS_SIG_alg_sdith_sdith3_l1_gf2_fast_cipherpow "SDitH3-L1-gf2-fast-cipherpow"
 ///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_ALG_IDENTIFIER_END
 ///// OQS_COPY_FROM_SLH_DSA_FRAGMENT_ALGID_START
 /** Algorithm identifier for slh_dsa_pure_sha2_128s */
@@ -508,7 +512,7 @@ extern "C" {
 ///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_ALGS_LENGTH_START
 
 /** Number of algorithm identifiers above. */
-#define OQS_SIG_algs_length 76 + OQS_SIG_SLH_DSA_algs_length
+#define OQS_SIG_algs_length 78 + OQS_SIG_SLH_DSA_algs_length
 ///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_ALGS_LENGTH_END
 
 /**

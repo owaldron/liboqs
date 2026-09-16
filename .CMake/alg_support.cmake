@@ -264,7 +264,9 @@ cmake_dependent_option(OQS_ENABLE_SIG_mqom_mqom3_cat5_gf2_shorter_ot "" ON "OQS_
 
 option(OQS_ENABLE_SIG_SDITH "Enable sdith algorithm family" ON)
 cmake_dependent_option(OQS_ENABLE_SIG_sdith_sdith3_l1_gf2_short "" ON "OQS_ENABLE_SIG_SDITH" OFF)
+cmake_dependent_option(OQS_ENABLE_SIG_sdith_sdith3_l1_gf2_short_cipherpow "" ON "OQS_ENABLE_SIG_SDITH" OFF)
 cmake_dependent_option(OQS_ENABLE_SIG_sdith_sdith3_l1_gf2_fast "" ON "OQS_ENABLE_SIG_SDITH" OFF)
+cmake_dependent_option(OQS_ENABLE_SIG_sdith_sdith3_l1_gf2_fast_cipherpow "" ON "OQS_ENABLE_SIG_SDITH" OFF)
 ##### OQS_COPY_FROM_UPSTREAM_FRAGMENT_ADD_ENABLE_BY_ALG_END
 ##### OQS_COPY_FROM_SLH_DSA_FRAGMENT_ADD_ENABLE_BY_ALG_START
 option(OQS_ENABLE_SIG_SLH_DSA "Enable slh_dsa algorithm family" ON)
@@ -1454,7 +1456,19 @@ endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_AVX_INSTRUCTIONS AND OQS_USE_AES_INSTRUCTIONS AND OQS_USE_PCLMULQDQ_INSTRUCTIONS))
+    cmake_dependent_option(OQS_ENABLE_SIG_sdith_sdith3_l1_gf2_short_cipherpow_avx2 "" ON "OQS_ENABLE_SIG_sdith_sdith3_l1_gf2_short_cipherpow" OFF)
+endif()
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_AVX_INSTRUCTIONS AND OQS_USE_AES_INSTRUCTIONS AND OQS_USE_PCLMULQDQ_INSTRUCTIONS))
     cmake_dependent_option(OQS_ENABLE_SIG_sdith_sdith3_l1_gf2_fast_avx2 "" ON "OQS_ENABLE_SIG_sdith_sdith3_l1_gf2_fast" OFF)
+endif()
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_AVX_INSTRUCTIONS AND OQS_USE_AES_INSTRUCTIONS AND OQS_USE_PCLMULQDQ_INSTRUCTIONS))
+    cmake_dependent_option(OQS_ENABLE_SIG_sdith_sdith3_l1_gf2_fast_cipherpow_avx2 "" ON "OQS_ENABLE_SIG_sdith_sdith3_l1_gf2_fast_cipherpow" OFF)
 endif()
 endif()
 
