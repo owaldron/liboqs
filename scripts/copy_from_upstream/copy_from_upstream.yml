@@ -112,7 +112,7 @@ upstreams:
   - name: sdith
     git_url: https://github.com/owaldron/sdith
     git_branch: owaldron/test/init-sandbox
-    git_commit: 7e0d0be65e09fedf6557c9190e4c757124105131
+    git_commit: eab0b0d644eef80cafef4da715f46c03ec07cad2
     sig_scheme_path: '.'
     sig_meta_path: 'integration/liboqs/schemes/META_{pretty_name_full}.yml'
     common_meta_path: 'integration/liboqs/META_Common.yml'
@@ -650,4 +650,24 @@ sigs:
         scheme: "sdith3_l1_gf2_fast_cipherpow"
         pqclean_scheme: sdith3_l1_gf2_fast_cipherpow
         pretty_name_full: SDitH3-L1-gf2-fast-cipherpow
+        signed_msg_order: msg_then_sig
+      -
+        scheme: "sdith3_l3_gf2_short"
+        pqclean_scheme: sdith3_l3_gf2_short
+        pretty_name_full: SDitH3-L3-gf2-short
+        signed_msg_order: msg_then_sig
+      -
+        scheme: "sdith3_l3_gf2_short_cipherpow"
+        pqclean_scheme: sdith3_l3_gf2_short_cipherpow
+        pretty_name_full: SDitH3-L3-gf2-short-cipherpow
+        signed_msg_order: msg_then_sig
+      -
+        scheme: "sdith3_l3_gf2_fast"
+        pqclean_scheme: sdith3_l3_gf2_fast
+        pretty_name_full: SDitH3-L3-gf2-fast
+        signed_msg_order: msg_then_sig
+      -
+        scheme: "sdith3_l3_gf2_fast_cipherpow"
+        pqclean_scheme: sdith3_l3_gf2_fast_cipherpow
+        pretty_name_full: SDitH3-L3-gf2-fast-cipherpow
         signed_msg_order: msg_then_sig

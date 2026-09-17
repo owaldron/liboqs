@@ -107,6 +107,22 @@
     "all": "5772f0d8473f9408001506db63b962ca9b2c7d12fcce60c5f73369d5e92b39cd",
     "single": "cc0d9688a9c4b5f99e90746657da5cdd1804b5012b3c934975599512d5061e4c"
   },
+  "SDitH3-L3-gf2-fast": {
+    "all": "577cf4397deaa4a97b8fffd6f9e3e1166f023eb0bafc2661fd8879a272ef4e0e",
+    "single": "b4778b069b8c58c803cb8bc8e3d4557c67e0ec5555a6ba2e82186beb0fdb1309"
+  },
+  "SDitH3-L3-gf2-fast-cipherpow": {
+    "all": "0e56d3d02ddb8dbb4b8e4afcb2871895a6cc02ddc2e8b075f9d3d449c5a68223",
+    "single": "e14a0f9964f77f455f633e5a498a0efc9657a7393c07a2226f730864aca79966"
+  },
+  "SDitH3-L3-gf2-short": {
+    "all": "4fa8c3dde2e8a6e458d5f90711fa146d3bea867df840f3c92ccb2bb25e3fd648",
+    "single": "7fa8b98407d4ac073a01c754824b66d8c0a8f6eb1e984082593e1d101c83c9e1"
+  },
+  "SDitH3-L3-gf2-short-cipherpow": {
+    "all": "22da728e98b2a7fa83609b38cbbfd71016126a989cd79087b27021146359ec4b",
+    "single": "e8a4ba0d333235fa061b79de0d65bc3932b73b6ee2322b3b6ed4fb3598356b4f"
+  },
   "SNOVA_24_5_4": {
     "all": "0958f4433311079eb8192fc65fddc3ca0b5f79dc22f7a2b34690741d182ccdd1",
     "single": "2759723cf44a3122df1d243132474255302edd2c7eb492986a4150c0099fa6fa"
