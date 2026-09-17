@@ -14,7 +14,7 @@ OQS_SIG *OQS_SIG_sdith_sdith3_l3_gf2_fast_cipherpow_new(void) {
 	sig->method_name = OQS_SIG_alg_sdith_sdith3_l3_gf2_fast_cipherpow;
 	sig->alg_version = "round3";
 
-	sig->claimed_nist_level = 1;
+	sig->claimed_nist_level = 3;
 	sig->euf_cma = true;
 	sig->suf_cma = false;
 	sig->sig_with_ctx_support = false;
