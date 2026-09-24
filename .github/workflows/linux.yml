@@ -3,19 +3,7 @@ name: Linux tests
 permissions:
   contents: read
 
-on:
-  workflow_call:
-  workflow_dispatch:
-    inputs:
-      nprocs:
-        description: "value passed to pytest --numprocesses (auto | logical | 2 | 4)"
-        default: "auto"
-        type: string
-      split_leaks:
-        description: "run tests/test_leaks.py as a separate pytest invocation"
-        default: "true"
-        type: choice
-        options: ["true", "false"]
+on: [workflow_call, workflow_dispatch]
 
 jobs:
 
@@ -39,6 +27,11 @@ jobs:
             container: openquantumsafe/ci-ubuntu-latest:latest
             CMAKE_ARGS: -DOQS_STRICT_WARNINGS=ON -DCMAKE_C_COMPILER=clang
             PYTEST_ARGS: --ignore=tests/test_kat_all.py -k 'not (leaks and ML-DSA)'
+    # ---- ARM CONFIG: the only two lines that differ between experiment branches ----
+    env:
+      NPROCS: auto
+      SPLIT_LEAKS: "true"
+    # -------------------------------------------------------------------------------
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 85 # max + 3*std over the last thousands of successful runs
 
@@ -68,8 +61,6 @@ jobs:
         timeout-minutes: 90
         env:
           OQS_TEST_SIG_CTX_STEP: "255"
-          NPROCS: ${{ inputs.nprocs || 'auto' }}
-          SPLIT_LEAKS: ${{ inputs.split_leaks || 'true' }}
         run: |
           echo "ARM: nprocs=$NPROCS split_leaks=$SPLIT_LEAKS"
           mkdir -p tmp
@@ -82,11 +73,10 @@ jobs:
             $EXTRA \
             --numprocesses=$NPROCS --durations=0 ${{ matrix.PYTEST_ARGS }}
       - name: Run leak tests
-        if: ${{ (inputs.split_leaks || 'true') != 'false' && !contains(matrix.PYTEST_ARGS, 'test_leaks') }}
+        if: ${{ env.SPLIT_LEAKS != 'false' && !contains(matrix.PYTEST_ARGS, 'test_leaks') }}
         timeout-minutes: 90
         env:
           OQS_TEST_SIG_CTX_STEP: "255"
-          NPROCS: ${{ inputs.nprocs || 'auto' }}
         run: |
           python3 -m pytest --verbose tests/test_leaks.py \
             --numprocesses=$NPROCS --durations=0 ${{ matrix.PYTEST_ARGS }}
