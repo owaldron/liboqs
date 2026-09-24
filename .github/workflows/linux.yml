@@ -13,8 +13,9 @@ on:
         type: string
       split_leaks:
         description: "run tests/test_leaks.py as a separate pytest invocation"
-        default: true
-        type: boolean
+        default: "true"
+        type: choice
+        options: ["true", "false"]
 
 jobs:
 
@@ -68,7 +69,7 @@ jobs:
         env:
           OQS_TEST_SIG_CTX_STEP: "255"
           NPROCS: ${{ inputs.nprocs || 'auto' }}
-          SPLIT_LEAKS: ${{ inputs.split_leaks == null && 'true' || inputs.split_leaks }}
+          SPLIT_LEAKS: ${{ inputs.split_leaks || 'true' }}
         run: |
           echo "ARM: nprocs=$NPROCS split_leaks=$SPLIT_LEAKS"
           mkdir -p tmp
@@ -81,7 +82,7 @@ jobs:
             $EXTRA \
             --numprocesses=$NPROCS --durations=0 ${{ matrix.PYTEST_ARGS }}
       - name: Run leak tests
-        if: ${{ (inputs.split_leaks == null || inputs.split_leaks) && !contains(matrix.PYTEST_ARGS, 'test_leaks') }}
+        if: ${{ (inputs.split_leaks || 'true') != 'false' && !contains(matrix.PYTEST_ARGS, 'test_leaks') }}
         timeout-minutes: 90
         env:
           OQS_TEST_SIG_CTX_STEP: "255"
