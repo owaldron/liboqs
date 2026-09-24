@@ -29,7 +29,7 @@ jobs:
             PYTEST_ARGS: --ignore=tests/test_kat_all.py -k 'not (leaks and ML-DSA)'
     # ---- ARM CONFIG: the only two lines that differ between experiment branches ----
     env:
-      NPROCS: auto
+      NPROCS: logical
       SPLIT_LEAKS: "true"
     # -------------------------------------------------------------------------------
     runs-on: ${{ matrix.runner }}
