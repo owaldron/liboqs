@@ -29,8 +29,8 @@ jobs:
             PYTEST_ARGS: --ignore=tests/test_kat_all.py -k 'not (leaks and ML-DSA)'
     # ---- ARM CONFIG: the only two lines that differ between experiment branches ----
     env:
-      NPROCS: auto
-      SPLIT_LEAKS: "true"
+      NPROCS: logical
+      SPLIT_LEAKS: "false"
     # -------------------------------------------------------------------------------
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 85 # max + 3*std over the last thousands of successful runs
