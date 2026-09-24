@@ -30,7 +30,7 @@ jobs:
     # ---- ARM CONFIG: the only two lines that differ between experiment branches ----
     env:
       NPROCS: auto
-      SPLIT_LEAKS: "true"
+      SPLIT_LEAKS: "false"
     # -------------------------------------------------------------------------------
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 85 # max + 3*std over the last thousands of successful runs
