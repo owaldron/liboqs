@@ -31,7 +31,7 @@ jobs:
     env:
       NPROCS: auto
       SPLIT_LEAKS: "false"
-      DIST_ARGS: ""
+      DIST_ARGS: "--dist load"
     # ----------------------------------------------------------------------------
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 85 # max + 3*std over the last thousands of successful runs
