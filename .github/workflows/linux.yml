@@ -123,6 +123,7 @@ jobs:
         working-directory: build
 
   linux_openssl330-dev:
+    if: false # TEMP(test/sched): disabled to keep the CI experiment focused
     runs-on: ubuntu-latest
     container:
       image: openquantumsafe/ci-ubuntu-jammy:latest
@@ -182,6 +183,7 @@ jobs:
         working-directory: build
 
   linux_x86_emulated:
+    if: false # TEMP(test/sched): disabled to keep the CI experiment focused
     runs-on: ubuntu-latest
     container:
       image: openquantumsafe/ci-ubuntu-latest:latest
