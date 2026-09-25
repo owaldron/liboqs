@@ -108,6 +108,8 @@ jobs:
           nm -gu lib/liboqs.so | sed -n 's/^[[:space:]]*[Uw] \([^_].*\)/\1/p' > undefined-syms.txt &&
           ! (grep '^\(CRYPTO\|ERR\|EVP\|OPENSSL\|RAND\)_' undefined-syms.txt)
         working-directory: build
+      - name: CPU probe (TEMP - drop before opening the PR)
+        run: lscpu | grep -E 'Model name|^CPU\(s\)|Thread\(s\)' || true
       - name: Run tests
         timeout-minutes: 60
         env:
