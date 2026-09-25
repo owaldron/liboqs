@@ -114,6 +114,8 @@ jobs:
         # pytest 6.2.5, so no pytest upgrade is required.
         if: contains(matrix.container, 'jammy')
         run: pip install -q "pytest-xdist>=3.2,<3.6"
+      - name: CPU probe (TEMP - drop before opening the PR)
+        run: lscpu | grep -E 'Model name|^CPU\(s\)|Thread\(s\)' || true
       - name: Run tests
         timeout-minutes: 60
         env:
