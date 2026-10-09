@@ -5,8 +5,16 @@
 #include <oqs/aes.h>
 #include <oqs/common.h>
 
+#ifdef SDITH_COUNT_REKEY
+unsigned long sdith_rekey_calls = 0;
+unsigned long sdith_loadsched_calls = 0;
+#endif
+
 
 EXPORT void aes128_set_key_ref(void* rk, const void* key128) {
+#ifdef SDITH_COUNT_REKEY
+  sdith_loadsched_calls++;
+#endif
   // Allocates a schedule via liboqs and writes the pointer to the schedule into the rk buffer
   void* schedule = NULL;
   OQS_AES128_ECB_load_schedule(key128, &schedule);
@@ -32,11 +40,22 @@ EXPORT void aes128_prepare_rk_buffer(void* rk, uint64_t nslots, uint64_t slot_by
 }
 
 EXPORT void aes128_set_key_reuse_ref(void* rk, const void* key128) {
+#ifdef SDITH_COUNT_REKEY
+  sdith_rekey_calls++;
+#endif
   // Interprets first sizeof(void *) bytes of rk as a schedule pointer for liboqs ctx.
   // aes128_prepare_rk_buffer has put a schedule there, so this is always a re-key.
   void* schedule = NULL;
   memcpy(&schedule, rk, sizeof(void*));
+#ifdef SDITH_NO_AES_REKEY
+  // EXPERIMENT baseline: what the glue would have to do without OQS_AES128_ECB_rekey.
+  OQS_AES128_free_schedule(schedule);
+  schedule = NULL;
+  OQS_AES128_ECB_load_schedule(key128, &schedule);
+  memcpy(rk, &schedule, sizeof(void*));
+#else
   OQS_AES128_ECB_rekey(key128, schedule);
+#endif
 }
 
 

@@ -40,8 +40,19 @@ static void AES128_ECB_load_schedule(const uint8_t *key, void **schedule) {
 
 static void AES128_ECB_rekey(const uint8_t *key, void *schedule) {
 	struct key_schedule *ks = (struct key_schedule *) schedule;
+#ifdef OQS_AES_OSSL_REKEY_FULL
+	// EXPERIMENT: the working-tree variant that rebuilds the EVP context.
+	if (ks->ctx != NULL) {
+		OSSL_FUNC(EVP_CIPHER_CTX_free)(ks->ctx);
+	}
+	ks->ctx = OSSL_FUNC(EVP_CIPHER_CTX_new)();
+	OQS_EXIT_IF_NULLPTR(ks->ctx, "OpenSSL");
+	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_EncryptInit_ex)(ks->ctx, oqs_aes_128_ecb(), NULL, key, NULL));
+	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_CIPHER_CTX_set_padding)(ks->ctx, 0));
+#else
 	// cipher MUST be NULL to avoid the reset at openssl/evp_enc.c:174
 	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_EncryptInit_ex)(ks->ctx, NULL, NULL, key, NULL));
+#endif
 }
 
 
