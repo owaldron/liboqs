@@ -5,16 +5,8 @@
 #include <oqs/aes.h>
 #include <oqs/common.h>
 
-#ifdef SDITH_COUNT_REKEY
-unsigned long sdith_rekey_calls = 0;
-unsigned long sdith_loadsched_calls = 0;
-#endif
-
 
 EXPORT void aes128_set_key_ref(void* rk, const void* key128) {
-#ifdef SDITH_COUNT_REKEY
-  sdith_loadsched_calls++;
-#endif
   // Allocates a schedule via liboqs and writes the pointer to the schedule into the rk buffer
   void* schedule = NULL;
   OQS_AES128_ECB_load_schedule(key128, &schedule);
@@ -40,9 +32,6 @@ EXPORT void aes128_prepare_rk_buffer(void* rk, uint64_t nslots, uint64_t slot_by
 }
 
 EXPORT void aes128_set_key_reuse_ref(void* rk, const void* key128) {
-#ifdef SDITH_COUNT_REKEY
-  sdith_rekey_calls++;
-#endif
   // Interprets first sizeof(void *) bytes of rk as a schedule pointer for liboqs ctx.
   // aes128_prepare_rk_buffer has put a schedule there, so this is always a re-key.
   void* schedule = NULL;

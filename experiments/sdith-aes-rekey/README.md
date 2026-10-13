@@ -13,8 +13,11 @@ Two compile-time switches, both no-ops unless defined:
 | `SDITH_NO_AES_REKEY` | `src/sig/sdith/sdith_sdith_common_base/aes_glue.c` | **The no-rekey baseline.** `aes128_set_key_reuse_ref` frees the old schedule and calls `OQS_AES128_ECB_load_schedule` instead of `OQS_AES128_ECB_rekey` — i.e. what the glue would have to do if the rekey entry point did not exist. |
 | `OQS_AES_OSSL_REKEY_FULL` | `src/common/aes/aes_ossl.c` | The OpenSSL `AES128_ECB_rekey` tears down and rebuilds the `EVP_CIPHER_CTX` instead of re-initialising the key in place. This is the uncommitted working-tree variant of `aes_ossl.c` as of 2026-10-09. |
 
-`SDITH_COUNT_REKEY` additionally exposes `sdith_rekey_calls` / `sdith_loadsched_calls`
-so the call counts can be read from a driver program.
+`SDITH_COUNT_REKEY` additionally exposes `oqs_aes128_rekey_calls` /
+`oqs_aes128_loadsched_calls` from `src/common/aes/aes.c` so the call counts can be read
+from a driver program. They live there, at the liboqs API boundary, rather than in the
+SDitH shim: `aes_glue.c` is compiled once per SDitH variant, so counters defined there
+end up multiply defined in `liboqs.a` and GNU ld rejects the link.
 
 ## Builds
 

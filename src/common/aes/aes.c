@@ -15,11 +15,25 @@ OQS_API void OQS_AES_set_callbacks(struct OQS_AES_callbacks *new_callbacks) {
 	callbacks = new_callbacks;
 }
 
+#ifdef SDITH_COUNT_REKEY
+// EXPERIMENT: call counters for the AES-128 key-setup entry points. Defined here
+// rather than in a per-algorithm shim because aes.c is compiled exactly once, so
+// there is a single definition to link against.
+unsigned long oqs_aes128_rekey_calls = 0;
+unsigned long oqs_aes128_loadsched_calls = 0;
+#endif
+
 void OQS_AES128_ECB_load_schedule(const uint8_t *key, void **schedule) {
+#ifdef SDITH_COUNT_REKEY
+	oqs_aes128_loadsched_calls++;
+#endif
 	callbacks->AES128_ECB_load_schedule(key, schedule);
 }
 
 void OQS_AES128_ECB_rekey(const uint8_t *key, void *schedule) {
+#ifdef SDITH_COUNT_REKEY
+	oqs_aes128_rekey_calls++;
+#endif
 	callbacks->AES128_ECB_rekey(key, schedule);
 }
 
