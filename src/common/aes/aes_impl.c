@@ -42,7 +42,7 @@ static void AES128_ECB_load_schedule(const uint8_t *key, void **_schedule) {
 	C_OR_NI_OR_ARM(
 	    oqs_aes128_load_schedule_c(key, _schedule),
 	    oqs_aes128_load_schedule_ni(key, _schedule),
-	    oqs_aes128_load_schedule_no_bitslice(key, _schedule)
+	    oqs_aes128_load_schedule_armv8(key, _schedule)
 	);
 }
 
@@ -50,7 +50,7 @@ static void AES128_ECB_rekey(const uint8_t *key, void *_schedule) {
 	C_OR_NI_OR_ARM(
 	    oqs_aes128_rekey_c(key, _schedule),
 	    oqs_aes128_rekey_ni(key, _schedule),
-	    oqs_aes128_rekey_no_bitslice(key, _schedule)
+	    oqs_aes128_rekey_armv8(key, _schedule)
 	);
 }
 

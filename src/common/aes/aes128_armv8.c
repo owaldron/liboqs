@@ -13,6 +13,54 @@ typedef struct {
 	uint8_t iv[16];
 } aes128ctx;
 
+static const uint8_t armv8_Rcon[10] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36 };
+
+/*
+    SubWord via AESE. AESE(state, rk) = ShiftRows(SubBytes(state ^ rk)), so with a
+    zero round key it is ShiftRows(SubBytes(state)). Broadcasting the word into all
+    four columns makes every row hold four equal bytes, and ShiftRows only rotates
+    within a row, so it becomes the identity: each lane of the result is SubWord(x).
+    Constant time, like the bitsliced S-box it replaces, but in two instructions.
+*/
+static inline uint32_t aes128_subword_armv8(uint32_t x) {
+	uint8x16_t v = vreinterpretq_u8_u32(vdupq_n_u32(x));
+	v = vaeseq_u8(v, vdupq_n_u8(0));
+	return vgetq_lane_u32(vreinterpretq_u32_u8(v), 0);
+}
+
+// Produces exactly the round keys that aes_keysched_no_bitslice does: 11 round keys
+// of 4 little-endian words each, laid out for vld1q_u8.
+static void aes128_keysched_armv8(uint32_t *skey, const uint8_t *key) {
+	for (unsigned i = 0; i < 4; i++) {
+		skey[i] = (uint32_t)key[4 * i] | ((uint32_t)key[4 * i + 1] << 8) |
+		          ((uint32_t)key[4 * i + 2] << 16) | ((uint32_t)key[4 * i + 3] << 24);
+	}
+	uint32_t tmp = skey[3];
+	for (unsigned i = 4, j = 0, k = 0; i < 44; i++) {
+		if (j == 0) {
+			tmp = (tmp << 24) | (tmp >> 8);
+			tmp = aes128_subword_armv8(tmp) ^ armv8_Rcon[k];
+		}
+		tmp ^= skey[i - 4];
+		skey[i] = tmp;
+		if (++j == 4) {
+			j = 0;
+			k++;
+		}
+	}
+}
+
+void oqs_aes128_load_schedule_armv8(const uint8_t *key, void **_schedule) {
+	*_schedule = OQS_MEM_malloc(sizeof(aes128ctx));
+	OQS_EXIT_IF_NULLPTR(*_schedule, "AES");
+	aes128_keysched_armv8((uint32_t *) ((aes128ctx *) *_schedule)->sk_exp, key);
+}
+
+void oqs_aes128_rekey_armv8(const uint8_t *key, void *_schedule) {
+	OQS_EXIT_IF_NULLPTR(_schedule, "AES");
+	aes128_keysched_armv8((uint32_t *) ((aes128ctx *) _schedule)->sk_exp, key);
+}
+
 void oqs_aes128_load_iv_armv8(const uint8_t *iv, size_t iv_len, void *_schedule) {
 	aes128ctx *ctx = _schedule;
 	if (iv_len == 12) {

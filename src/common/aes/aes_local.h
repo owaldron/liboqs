@@ -23,6 +23,8 @@ void oqs_aes128_ctr_enc_sch_upd_blks_c(void *schedule, uint8_t *out, size_t out_
 
 void oqs_aes128_load_schedule_no_bitslice(const uint8_t *key, void **_schedule);
 void oqs_aes128_rekey_no_bitslice(const uint8_t *key, void *_schedule);
+void oqs_aes128_load_schedule_armv8(const uint8_t *key, void **_schedule);
+void oqs_aes128_rekey_armv8(const uint8_t *key, void *_schedule);
 void oqs_aes128_load_iv_armv8(const uint8_t *iv, size_t iv_len, void *_schedule);
 void oqs_aes128_free_schedule_no_bitslice(void *schedule);
 void oqs_aes128_enc_sch_block_armv8(const uint8_t *plaintext, const void *_schedule, uint8_t *ciphertext);
