@@ -5,7 +5,7 @@ permissions:
 
 on:
   push:
-    branches-ignore: 'main'
+    branches-ignore: ['main', 'demo/codeql-inline-annotation']  # TEST ONLY
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
