@@ -17,7 +17,7 @@
 static void do_hash(uint8_t *output, const uint8_t *input, size_t inplen, const EVP_MD *md) {
 	EVP_MD_CTX *mdctx;
 	mdctx = OSSL_FUNC(EVP_MD_CTX_new)();
-	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_DigestInit_ex)(mdctx, md, NULL));
+	OSSL_FUNC(EVP_DigestInit_ex)(mdctx, md, NULL); // DEMO: deliberately unchecked
 	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_DigestUpdate)(mdctx, input, inplen));
 	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_DigestFinal_ex)(mdctx, output, NULL));
 	OSSL_FUNC(EVP_MD_CTX_free)(mdctx);
