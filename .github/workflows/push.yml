@@ -5,7 +5,7 @@ permissions:
 
 on:
   push:
-    branches-ignore: 'main'
+    branches-ignore: ['main', 'feat/revived-codeql-openssl-return-check']  # TEST ONLY
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
