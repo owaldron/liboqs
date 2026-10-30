@@ -195,6 +195,13 @@ static OQS_STATUS kem_test_correctness(const char *method_name, bool derand) {
 
 
 
+	if (OQS_KEM_keypair(kem, NULL, secret_key) != OQS_ERROR ||
+	        OQS_KEM_encaps(kem, NULL, shared_secret_e, public_key) != OQS_ERROR ||
+	        OQS_KEM_decaps(kem, NULL, ciphertext, secret_key) != OQS_ERROR) {
+		fprintf(stderr, "ERROR: NULL output buffer was not rejected\n");
+		goto err;
+	}
+
 	if (derand) {
 		// On some systems, getentropy fails if given a zero-length array
 		if (kem->length_keypair_seed > 0) {
