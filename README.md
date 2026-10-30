@@ -3,7 +3,7 @@ liboqs
 
 [![Main Branch Tests](https://github.com/open-quantum-safe/liboqs/actions/workflows/commit-to-main.yml/badge.svg)](https://github.com/open-quantum-safe/liboqs/actions/workflows/commit-to-main.yml)
 [![Weekly Tests](https://github.com/open-quantum-safe/liboqs/actions/workflows/weekly.yml/badge.svg)](https://github.com/open-quantum-safe/liboqs/actions/workflows/weekly.yml)
-[![Coverage Status](https://codecov.io/gh/open-quantum-safe/liboqs/branch/main/graph/badge.svg?flag=full)](https://app.codecov.io/gh/open-quantum-safe/liboqs)
+[![Coverage Status](https://codecov.io/gh/owaldron/liboqs/branch/cov-demo-main/graph/badge.svg?flag=full)](https://app.codecov.io/gh/owaldron/liboqs/tree/cov-demo-main)
 
 liboqs is an open source C library for quantum-safe cryptographic algorithms.
 

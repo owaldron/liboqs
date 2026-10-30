@@ -39,8 +39,8 @@ HEADER = [
     "Optimization targets",
 ]
 
-CODECOV_BADGE_URL = "https://codecov.io/gh/open-quantum-safe/liboqs/branch/main/graph/badge.svg"
-CODECOV_TREE_URL = "https://app.codecov.io/gh/open-quantum-safe/liboqs/tree/main"
+CODECOV_BADGE_URL = "https://codecov.io/gh/owaldron/liboqs/branch/cov-demo-main/graph/badge.svg"
+CODECOV_TREE_URL = "https://app.codecov.io/gh/owaldron/liboqs/tree/cov-demo-main"
 
 FRAGMENTS = [
     ("kem", "KEM"),

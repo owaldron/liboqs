@@ -143,7 +143,7 @@ def test_algorithms_md_family_row_coverage_badge():
     }
     cols = dict(zip(mod.HEADER, mod.family_row(algdata, "kem", "foo")))
     assert "badge.svg?component=kem_foo" in cols["Coverage"]
-    assert cols["Coverage"].endswith("/tree/main/src/kem/foo)")
+    assert cols["Coverage"].endswith("/tree/cov-demo-main/src/kem/foo)")
 
 
 ALG_CATEGORIES = ["kem", "sig", "sig_stfl"]

@@ -55,7 +55,7 @@ This workflow runs a minimal set of tests that should pass before heavier tests 
 
 #### <a name="code-coverage.yml"></a> Code coverage tests (`code-coverage.yml`)
 
-This workflow measures line coverage with gcov and lcov in a Debug build on three configurations (x86_64 generic, x86_64 distributable, and arm64 distributable), and uploads the combined result to [Codecov](https://app.codecov.io/gh/open-quantum-safe/liboqs).
+This workflow measures line coverage with gcov and lcov in a Debug build on three configurations (x86_64 generic, x86_64 distributable, and arm64 distributable), and uploads the combined result to [Codecov](https://app.codecov.io/gh/owaldron/liboqs).
 Its `scope` input selects what is measured, and each scope is uploaded under a Codecov flag of the same name:
 
 | Scope | Called by | Algorithms | Tests |
