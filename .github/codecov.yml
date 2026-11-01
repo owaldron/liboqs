@@ -39,11 +39,6 @@ component_management:
     # and carried-forward 'full' data.
     flag_regexes: ["^full$"]
   individual_components:
-    # All library code; the README badge uses it because flag-filtered
-    # badges render too slowly for GitHub's image proxy.
-    - component_id: library
-      name: All library code
-      paths: ["src/**"]
     - component_id: common
       name: Common (AES, SHA-2, SHA-3, RNG)
       paths: ["src/common/**"]
