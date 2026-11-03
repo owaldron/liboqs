@@ -43,7 +43,7 @@ jobs:
             SKIP_ALGS: 'SLH_DSA_(SHA2|SHA3|SHAKE_128)(.)*'
           - name: extensions
             container: openquantumsafe/ci-ubuntu-latest:latest
-            CMAKE_ARGS: -DOQS_DIST_BUILD=OFF -DOQS_OPT_TARGET=haswell -DCMAKE_BUILD_TYPE=Debug -DOQS_ENABLE_TEST_CONSTANT_TIME=ON
+            CMAKE_ARGS: -DOQS_DIST_BUILD=OFF -DOQS_OPT_TARGET=skylake -DCMAKE_BUILD_TYPE=Debug -DOQS_ENABLE_TEST_CONSTANT_TIME=ON
             PYTEST_ARGS: --numprocesses=auto --dist load --maxschedchunk=1 -k 'test_constant_time'
             SKIP_ALGS: 'SLH_DSA_(SHA2|SHA3|SHAKE_128)(.)*'
     container:
