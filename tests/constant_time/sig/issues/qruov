@@ -40,3 +40,43 @@
    Memcheck:Cond
    src:qruov_common.c:33
 }
+
+# TODO: human audit of these is still required to verify CT-claims
+# claude-opus-5.5:
+#   avx2 implementation only. The rejection sampler compacts accepted
+#   coefficients with shuffle masks looked up by the rejection pattern
+#   (bextmask[mask], bdepmask[mask]), and its loop bounds and memset lengths
+#   depend on how many coefficients were rejected. Some of the sampled buffers
+#   are derived from secret seeds, so this leaks the positions and number of
+#   rejected samples. The fastop_* helpers are static and also exist in the
+#   ref and opt implementations, so each entry is anchored to an avx2 caller.
+{
+   AVX2 rejection sampling: shuffle-mask lookup indexed by the rejection pattern
+   Memcheck:Value8
+   ...
+   fun:fastop_rejsamp_prep
+   ...
+   fun:qruov_*_avx2_*
+}
+{
+   AVX2 rejection sampling: loop bounds depend on the number of rejected samples
+   Memcheck:Cond
+   ...
+   fun:fastop_rejsamp_prep
+   ...
+   fun:qruov_*_avx2_*
+}
+{
+   AVX2 rejection sampling: shuffle-mask lookup indexed by the rejection pattern
+   Memcheck:Value8
+   ...
+   fun:fastop_rejection_sample
+   fun:qruov_*_avx2_rejection_sample
+}
+{
+   AVX2 rejection sampling: loop bounds depend on the number of rejected samples
+   Memcheck:Cond
+   ...
+   fun:fastop_rejection_sample
+   fun:qruov_*_avx2_rejection_sample
+}
