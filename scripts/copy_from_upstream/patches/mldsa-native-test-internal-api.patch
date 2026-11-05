@@ -1,0 +1,92 @@
+Test-only *_oqs shims for FIPS-internal functions, guarded by OQS_ENABLE_TEST_INTERNAL_API.
+liboqs exposes them as OQS_{KEM,SIG}_TEST_* (see src/{kem,sig}/*_test.h).
+Drop this patch once mldsa-native carries the shims itself.
+diff --git a/integration/liboqs/sig_glue.c b/integration/liboqs/sig_glue.c
+index e4d7ae7c..5934712b 100644
+--- a/integration/liboqs/sig_glue.c
++++ b/integration/liboqs/sig_glue.c
+@@ -104,6 +104,84 @@ int mld_oqs_verify_extmu(const uint8_t *sig, size_t siglen, const uint8_t *mu,
+   return mld_oqs_status(MLD_OQS_NS(verify_extmu)(sig, mu, pk));
+ }
+ 
++#if defined(OQS_ENABLE_TEST_INTERNAL_API)
++/*
++ * Test-only shims for FIPS 204 functions that liboqs does not expose in its
++ * public API: ML-DSA.KeyGen_internal, ML-DSA.Sign_internal and
++ * ML-DSA.Verify_internal (Algorithms 6-8), and HashML-DSA with a caller-
++ * computed digest and caller-supplied randomness (Algorithms 4-5). liboqs
++ * exposes them as OQS_SIG_TEST_* only when configured with
++ * -DOQS_ENABLE_TEST_INTERNAL_API=ON. hashalg is one of MLD_PREHASH_*.
++ */
++#define mld_oqs_keypair_internal MLD_OQS_NS(keypair_internal_oqs)
++#define mld_oqs_signature_internal MLD_OQS_NS(signature_internal_oqs)
++#define mld_oqs_verify_internal MLD_OQS_NS(verify_internal_oqs)
++#define mld_oqs_signature_pre_hash MLD_OQS_NS(signature_pre_hash_oqs)
++#define mld_oqs_verify_pre_hash MLD_OQS_NS(verify_pre_hash_oqs)
++
++int mld_oqs_keypair_internal(uint8_t *pk, uint8_t *sk, const uint8_t *seed)
++{
++  return mld_oqs_status(MLD_OQS_NS(keypair_internal)(pk, sk, seed));
++}
++
++int mld_oqs_signature_internal(uint8_t *sig, size_t *siglen, const uint8_t *m,
++                               size_t mlen, const uint8_t *rnd,
++                               const uint8_t *sk)
++{
++  int ret = MLD_OQS_NS(signature_internal)(sig, m, mlen, NULL, 0, rnd, sk, 0);
++  if (ret == 0)
++  {
++    *siglen = MLDSA_BYTES(MLD_CONFIG_PARAMETER_SET);
++  }
++  return mld_oqs_status(ret);
++}
++
++int mld_oqs_verify_internal(const uint8_t *sig, size_t siglen,
++                            const uint8_t *m, size_t mlen, const uint8_t *pk)
++{
++  if (siglen != MLDSA_BYTES(MLD_CONFIG_PARAMETER_SET))
++  {
++    return OQS_ERROR;
++  }
++  return mld_oqs_status(
++      MLD_OQS_NS(verify_internal)(sig, m, mlen, NULL, 0, pk, 0));
++}
++
++int mld_oqs_signature_pre_hash(uint8_t *sig, size_t *siglen,
++                               const uint8_t *ph, size_t phlen,
++                               const uint8_t *ctx, size_t ctxlen,
++                               const uint8_t *rnd, const uint8_t *sk,
++                               int hashalg)
++{
++  int ret = MLD_OQS_NS(signature_pre_hash_internal)(sig, ph, phlen, ctx, ctxlen,
++                                                    rnd, sk, hashalg);
++  if (ret == 0)
++  {
++    *siglen = MLDSA_BYTES(MLD_CONFIG_PARAMETER_SET);
++  }
++  return mld_oqs_status(ret);
++}
++
++int mld_oqs_verify_pre_hash(const uint8_t *sig, size_t siglen,
++                            const uint8_t *ph, size_t phlen,
++                            const uint8_t *ctx, size_t ctxlen,
++                            const uint8_t *pk, int hashalg)
++{
++  if (siglen != MLDSA_BYTES(MLD_CONFIG_PARAMETER_SET))
++  {
++    return OQS_ERROR;
++  }
++  return mld_oqs_status(MLD_OQS_NS(verify_pre_hash_internal)(
++      sig, ph, phlen, ctx, ctxlen, pk, hashalg));
++}
++
++#undef mld_oqs_keypair_internal
++#undef mld_oqs_signature_internal
++#undef mld_oqs_verify_internal
++#undef mld_oqs_signature_pre_hash
++#undef mld_oqs_verify_pre_hash
++#endif /* OQS_ENABLE_TEST_INTERNAL_API */
++
+ #undef mld_oqs_keypair
+ #undef mld_oqs_signature
+ #undef mld_oqs_verify

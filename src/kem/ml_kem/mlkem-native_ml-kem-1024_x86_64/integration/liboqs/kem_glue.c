@@ -73,6 +73,29 @@ int mlk_oqs_dec(uint8_t *ss, const uint8_t *ct, const uint8_t *sk)
   return mlk_oqs_status(MLK_OQS_NS(dec)(ss, ct, sk));
 }
 
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
+/*
+ * Test-only shims for the FIPS 203 input checks (Section 7.2 and 7.3).
+ * liboqs exposes them as OQS_KEM_TEST_* only when configured with
+ * -DOQS_ENABLE_TEST_INTERNAL_API=ON.
+ */
+#define mlk_oqs_check_pk MLK_OQS_NS(check_pk_oqs)
+#define mlk_oqs_check_sk MLK_OQS_NS(check_sk_oqs)
+
+int mlk_oqs_check_pk(const uint8_t *pk)
+{
+  return mlk_oqs_status(MLK_OQS_NS(check_pk)(pk));
+}
+
+int mlk_oqs_check_sk(const uint8_t *sk)
+{
+  return mlk_oqs_status(MLK_OQS_NS(check_sk)(sk));
+}
+
+#undef mlk_oqs_check_pk
+#undef mlk_oqs_check_sk
+#endif /* OQS_ENABLE_TEST_INTERNAL_API */
+
 #undef mlk_oqs_keypair
 #undef mlk_oqs_keypair_derand
 #undef mlk_oqs_enc
