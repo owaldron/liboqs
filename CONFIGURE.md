@@ -21,6 +21,7 @@ The following options can be passed to CMake before the build file generation pr
 - [USE_COVERAGE](#USE_COVERAGE)
 - [USE_SANITIZER](#USE_SANITIZER)
 - [OQS_ENABLE_TEST_CONSTANT_TIME](#OQS_ENABLE_TEST_CONSTANT_TIME)
+- [OQS_ENABLE_TEST_INTERNAL_API](#OQS_ENABLE_TEST_INTERNAL_API)
 - [OQS_STRICT_WARNINGS](#OQS_STRICT_WARNINGS)
 - [OQS_EMBEDDED_BUILD](#OQS_EMBEDDED_BUILD)
 - [OQS_MEMOPT_BUILD](#OQS_MEMOPT_BUILD)
@@ -256,6 +257,22 @@ This is used in conjunction with `tests/test_constant_time.py` to use Valgrind t
 See the documentation in [`tests/test_constant_time.py`](https://github.com/open-quantum-safe/liboqs/blob/main/tests/test_constant_time.py) for more usage information.
 
 When this option is set to `ON`, the additional option `OQS_ENABLE_TEST_CONSTANT_TIME_OPTIMIZED` is made available to control whether liboqs is built using `-O3` optimization, as in a release build, or using the default "Debug" profile. By default, `OQS_ENABLE_TEST_CONSTANT_TIME_OPTIMIZED` is `OFF`.
+
+**Default**: `OFF`.
+
+## OQS_ENABLE_TEST_INTERNAL_API
+
+Exposes internal functions that are not a part of the public API, so that they can be tested internally
+in liboqs.
+This is scoped to FIPS-specified subroutines that are expected to be semi-permanent.
+These are accessed through the test-only headers `oqs/kem_test.h` and `oqs/sig_test.h`, so that test harnesses can validate them against NIST ACVP and Wycheproof vectors. 
+This currently covers:
+- ML-KEM: encapsulation and decapsulation key checks (FIPS 203, Sections 7.2 and 7.3).
+- ML-DSA: `ML-DSA.KeyGen_internal`, `ML-DSA.Sign_internal` and `ML-DSA.Verify_internal` (FIPS 204, Algorithms 6–8), and HashML-DSA with a caller-supplied digest and randomness (FIPS 204, Algorithms 4–5).
+
+Each function is available per scheme (e.g. `OQS_SIG_TEST_ml_dsa_44_sign_internal`) and generically via an `OQS_KEM`/`OQS_SIG` object (e.g. `OQS_SIG_TEST_sign_internal`). Calls use the same CPU-feature-based backend selection as the public API.
+
+When this option is `OFF`, the ACVP/Wycheproof tests that need these functions are skipped. **This option must not be enabled in production builds**: the exposed functions bypass the input formatting, domain separation and fresh randomness that the public API provides.
 
 **Default**: `OFF`.
 

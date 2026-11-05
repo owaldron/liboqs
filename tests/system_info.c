@@ -270,6 +270,9 @@ static void print_oqs_configuration(void) {
 #ifdef OQS_ENABLE_TEST_CONSTANT_TIME
 	printf("OQS_ENABLE_TEST_CONSTANT_TIME ");
 #endif
+#ifdef OQS_ENABLE_TEST_INTERNAL_API
+	printf("OQS_ENABLE_TEST_INTERNAL_API ");
+#endif
 #ifdef OQS_SPEED_USE_ARM_PMU
 	printf("OQS_SPEED_USE_ARM_PMU ");
 #endif

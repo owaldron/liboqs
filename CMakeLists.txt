@@ -30,6 +30,10 @@ option(OQS_EMBEDDED_BUILD "Compile liboqs for an Embedded environment without a 
 option(OQS_MEMOPT_BUILD "Build with memory-optimized implementations where available." OFF)
 option(OQS_USE_CUPQC "Utilize cuPQC as the backend for supported PQC algorithms." OFF)
 option(OQS_USE_ICICLE "Utilize ICICLE as the backend for supported PQC algorithms." OFF)
+option(OQS_ENABLE_TEST_INTERNAL_API "Expose FIPS 203/204 internal functions (OQS_KEM_TEST_*/OQS_SIG_TEST_*) for test-vector validation. Do not enable in production builds." OFF)
+if(OQS_ENABLE_TEST_INTERNAL_API)
+    message(WARNING "OQS_ENABLE_TEST_INTERNAL_API is ON: liboqs will export FIPS-internal functions intended only for testing. Do not distribute this build.")
+endif()
 # --- Test Configuration ---
 set(OQS_PYTEST_NUMPROCESSES "auto" CACHE STRING "Number of parallel processes for pytest (e.g., 'auto', '1', '2'). Useful for limiting memory usage on constrained CI/CD systems.")
 message(STATUS "OQS Testing: Pytest parallel workers set to '${OQS_PYTEST_NUMPROCESSES}'")
