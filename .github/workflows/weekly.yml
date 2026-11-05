@@ -6,16 +6,12 @@ permissions:
 on:
   schedule:
     - cron: "5 0 * * 0"
-  push:
-    branches:
-      - demo/create-issue-on-weekly-fail
 
 jobs:
 
   # To guarantee Maintained check is occasionally updated. See
   # https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained
   scorecard:
-    if: github.event_name != 'push'
     uses: ./.github/workflows/supplychain.yml
     secrets: inherit
     permissions:
@@ -24,35 +20,24 @@ jobs:
       contents: read
 
   extended-tests:
-    if: github.event_name != 'push'
     uses: ./.github/workflows/extended.yml
 
   kem-continuous-benchmarking:
-    if: github.event_name != 'push'
     uses: ./.github/workflows/kem-bench.yml
     permissions:
       contents: write
     
   sig-continuous-benchmarking:
-    if: github.event_name != 'push'
     uses: ./.github/workflows/sig-bench.yml
     permissions:
       contents: write
 
   ct-tooling:
-    if: github.event_name != 'push'
     uses: ./.github/workflows/ct-tooling.yml
     permissions:
       contents: read
     with:
       algorithms: 'ML-KEM-512,ML-KEM-768,ML-KEM-1024'
-
-  demo-failure:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fail quickly to demonstrate issue creation
-        run: exit 1
 
   report-failure:
     if: ${{ always() && contains(needs.*.result, 'failure') }}
@@ -62,7 +47,6 @@ jobs:
       - kem-continuous-benchmarking
       - sig-continuous-benchmarking
       - ct-tooling
-      - demo-failure
     runs-on: ubuntu-latest
     permissions:
       issues: write
