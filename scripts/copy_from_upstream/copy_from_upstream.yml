@@ -233,6 +233,7 @@ kems:
     upstream_location: mlkem-native
     derandomized_keypair: true
     derandomized_encaps: true
+    test_internal_api: true
     schemes:
       -
         scheme: "512"
@@ -251,6 +252,7 @@ sigs:
     name: ml_dsa
     default_implementation: ref
     upstream_location: mldsa-native
+    test_internal_api: true
     schemes:
       -
         scheme: "44"

@@ -3,6 +3,11 @@
 #include <stdlib.h>
 
 #include <oqs/kem_{{ family }}.h>
+{%- if test_internal_api is defined and test_internal_api %}
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
+#include <oqs/kem_test.h>
+#endif
+{%- endif %}
 
 {% for scheme in schemes -%}
 #if defined(OQS_ENABLE_KEM_{{ family }}_{{ scheme['scheme'] }}) {%- if 'alias_scheme' in scheme %} || defined(OQS_ENABLE_KEM_{{ family }}_{{ scheme['alias_scheme'] }}){%- endif %}
@@ -512,6 +517,69 @@ OQS_API OQS_STATUS OQS_KEM_{{ family }}_{{ scheme['scheme'] }}_decaps(uint8_t *s
 #endif /* OQS_LIBJADE_BUILD */
 {%- endif %}
 }
+{%- if test_internal_api is defined and test_internal_api %}
+{#- Test-only OQS_KEM_TEST_* functions. The *_oqs shim names are derived from signature_keypair,
+    so only implementations that follow the *_keypair_oqs glue naming (not the GPU backends) are used. -#}
+{%- set default_impl = scheme['metadata']['implementations'] | selectattr('name', 'equalto', scheme['default_implementation']) | first %}
+{%- set test = namespace(other_impls=[]) %}
+{%- for impl in scheme['metadata']['implementations'] if impl['name'] != scheme['default_implementation'] and impl.get('signature_keypair', '').endswith('_keypair_oqs') %}
+{%- set test.other_impls = test.other_impls + [impl] %}
+{%- endfor %}
+{#- Body of an OQS_KEM_TEST_* function: same backend selection as the public functions above. -#}
+{%- macro test_internal_dispatch(shim, args) %}
+{%- for impl in test.other_impls %}
+    {%- if loop.first %}
+#if defined(OQS_ENABLE_KEM_{{ family }}_{{ scheme['scheme'] }}_{{ impl['name'] }})
+    {%- else %}
+#elif defined(OQS_ENABLE_KEM_{{ family }}_{{ scheme['scheme'] }}_{{ impl['name'] }})
+    {%- endif %}
+    {%- if 'required_flags' in impl and impl['required_flags'] %}
+#if defined(OQS_DIST_BUILD)
+	if ({%- for flag in impl['required_flags'] -%}OQS_CPU_has_extension(OQS_CPU_EXT_{{ flag|upper }}){%- if not loop.last %} && {% endif -%}{%- endfor -%}) {
+#endif /* OQS_DIST_BUILD */
+		return (OQS_STATUS) {{ impl['signature_keypair']|replace('_keypair_oqs', '_' + shim) }}({{ args }});
+#if defined(OQS_DIST_BUILD)
+	} else {
+		return (OQS_STATUS) {{ default_impl['signature_keypair']|replace('_keypair_oqs', '_' + shim) }}({{ args }});
+	}
+#endif /* OQS_DIST_BUILD */
+    {%- else %}
+	return (OQS_STATUS) {{ impl['signature_keypair']|replace('_keypair_oqs', '_' + shim) }}({{ args }});
+    {%- endif %}
+{%- endfor %}
+{%- if test.other_impls %}
+#else
+{%- endif %}
+	return (OQS_STATUS) {{ default_impl['signature_keypair']|replace('_keypair_oqs', '_' + shim) }}({{ args }});
+{%- if test.other_impls %}
+#endif
+{%- endif %}
+{%- endmacro %}
+
+/* ========================================================================== */
+/*                             Internal Test API                              */
+/* ========================================================================== */
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
+extern int {{ default_impl['signature_keypair']|replace('_keypair_oqs', '_check_pk_oqs') }}(const uint8_t *pk);
+extern int {{ default_impl['signature_keypair']|replace('_keypair_oqs', '_check_sk_oqs') }}(const uint8_t *sk);
+{%- for impl in test.other_impls %}
+
+#if defined(OQS_ENABLE_KEM_{{ family }}_{{ scheme['scheme'] }}_{{ impl['name'] }})
+extern int {{ impl['signature_keypair']|replace('_keypair_oqs', '_check_pk_oqs') }}(const uint8_t *pk);
+extern int {{ impl['signature_keypair']|replace('_keypair_oqs', '_check_sk_oqs') }}(const uint8_t *sk);
+#endif
+{%- endfor %}
+
+OQS_API OQS_STATUS OQS_KEM_TEST_{{ family }}_{{ scheme['scheme'] }}_check_encaps_key(const uint8_t *public_key) {
+{{- test_internal_dispatch('check_pk_oqs', 'public_key') }}
+}
+
+OQS_API OQS_STATUS OQS_KEM_TEST_{{ family }}_{{ scheme['scheme'] }}_check_decaps_key(const uint8_t *secret_key) {
+{{- test_internal_dispatch('check_sk_oqs', 'secret_key') }}
+}
+
+#endif /* OQS_ENABLE_TEST_INTERNAL_API */
+{%- endif %}
 
 #endif
 {% endfor -%}

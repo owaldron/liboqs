@@ -3,6 +3,11 @@
 #include <stdlib.h>
 
 #include <oqs/sig_{{ family }}.h>
+{%- if test_internal_api is defined and test_internal_api and schemes | rejectattr('is_extmu') | list %}
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
+#include <oqs/sig_test.h>
+#endif
+{%- endif %}
 
 {% for scheme in schemes -%}
 #if defined(OQS_ENABLE_SIG_{{ family }}_{{ scheme['scheme'] }}) {%- if 'alias_scheme' in scheme %} || defined(OQS_ENABLE_SIG_{{ family }}_{{ scheme['alias_scheme'] }}){%- endif %}
@@ -392,6 +397,87 @@ OQS_API OQS_STATUS OQS_SIG_{{ family }}_{{ scheme['scheme'] }}_verify_with_ctx_s
 		return OQS_ERROR;
 	}
 }
+{%- endif %}
+{%- if test_internal_api is defined and test_internal_api and not scheme.is_extmu %}
+{#- Test-only OQS_SIG_TEST_* functions. The *_oqs shim names are derived from signature_keypair,
+    so only implementations that follow the *_keypair_oqs glue naming are used. -#}
+{%- set default_impl = scheme['metadata']['implementations'] | selectattr('name', 'equalto', scheme['default_implementation']) | first %}
+{%- set test = namespace(other_impls=[]) %}
+{%- for impl in scheme['metadata']['implementations'] if impl['name'] != scheme['default_implementation'] and impl.get('signature_keypair', '').endswith('_keypair_oqs') %}
+{%- set test.other_impls = test.other_impls + [impl] %}
+{%- endfor %}
+{#- Body of an OQS_SIG_TEST_* function: same backend selection as the public functions above. -#}
+{%- macro test_internal_dispatch(shim, args) %}
+{%- for impl in test.other_impls %}
+    {%- if loop.first %}
+#if defined(OQS_ENABLE_SIG_{{ family }}_{{ scheme['scheme'] }}_{{ impl['name'] }})
+    {%- else %}
+#elif defined(OQS_ENABLE_SIG_{{ family }}_{{ scheme['scheme'] }}_{{ impl['name'] }})
+    {%- endif %}
+    {%- if 'required_flags' in impl and impl['required_flags'] %}
+#if defined(OQS_DIST_BUILD)
+	if ({%- for flag in impl['required_flags'] -%}OQS_CPU_has_extension(OQS_CPU_EXT_{{ flag|upper }}){%- if not loop.last %} && {% endif -%}{%- endfor -%}) {
+#endif /* OQS_DIST_BUILD */
+		return (OQS_STATUS) {{ impl['signature_keypair']|replace('_keypair_oqs', '_' + shim) }}({{ args }});
+#if defined(OQS_DIST_BUILD)
+	} else {
+		return (OQS_STATUS) {{ default_impl['signature_keypair']|replace('_keypair_oqs', '_' + shim) }}({{ args }});
+	}
+#endif /* OQS_DIST_BUILD */
+    {%- else %}
+	return (OQS_STATUS) {{ impl['signature_keypair']|replace('_keypair_oqs', '_' + shim) }}({{ args }});
+    {%- endif %}
+{%- endfor %}
+{%- if test.other_impls %}
+#else
+{%- endif %}
+	return (OQS_STATUS) {{ default_impl['signature_keypair']|replace('_keypair_oqs', '_' + shim) }}({{ args }});
+{%- if test.other_impls %}
+#endif
+{%- endif %}
+{%- endmacro %}
+
+/* ========================================================================== */
+/*                             Internal Test API                              */
+/* ========================================================================== */
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
+extern int {{ default_impl['signature_keypair']|replace('_keypair_oqs', '_keypair_internal_oqs') }}(uint8_t *pk, uint8_t *sk, const uint8_t *seed);
+extern int {{ default_impl['signature_keypair']|replace('_keypair_oqs', '_signature_internal_oqs') }}(uint8_t *sig, size_t *siglen, const uint8_t *m, size_t mlen, const uint8_t *rnd, const uint8_t *sk);
+extern int {{ default_impl['signature_keypair']|replace('_keypair_oqs', '_verify_internal_oqs') }}(const uint8_t *sig, size_t siglen, const uint8_t *m, size_t mlen, const uint8_t *pk);
+extern int {{ default_impl['signature_keypair']|replace('_keypair_oqs', '_signature_pre_hash_oqs') }}(uint8_t *sig, size_t *siglen, const uint8_t *ph, size_t phlen, const uint8_t *ctx, size_t ctxlen, const uint8_t *rnd, const uint8_t *sk, int hashalg);
+extern int {{ default_impl['signature_keypair']|replace('_keypair_oqs', '_verify_pre_hash_oqs') }}(const uint8_t *sig, size_t siglen, const uint8_t *ph, size_t phlen, const uint8_t *ctx, size_t ctxlen, const uint8_t *pk, int hashalg);
+{%- for impl in test.other_impls %}
+
+#if defined(OQS_ENABLE_SIG_{{ family }}_{{ scheme['scheme'] }}_{{ impl['name'] }})
+extern int {{ impl['signature_keypair']|replace('_keypair_oqs', '_keypair_internal_oqs') }}(uint8_t *pk, uint8_t *sk, const uint8_t *seed);
+extern int {{ impl['signature_keypair']|replace('_keypair_oqs', '_signature_internal_oqs') }}(uint8_t *sig, size_t *siglen, const uint8_t *m, size_t mlen, const uint8_t *rnd, const uint8_t *sk);
+extern int {{ impl['signature_keypair']|replace('_keypair_oqs', '_verify_internal_oqs') }}(const uint8_t *sig, size_t siglen, const uint8_t *m, size_t mlen, const uint8_t *pk);
+extern int {{ impl['signature_keypair']|replace('_keypair_oqs', '_signature_pre_hash_oqs') }}(uint8_t *sig, size_t *siglen, const uint8_t *ph, size_t phlen, const uint8_t *ctx, size_t ctxlen, const uint8_t *rnd, const uint8_t *sk, int hashalg);
+extern int {{ impl['signature_keypair']|replace('_keypair_oqs', '_verify_pre_hash_oqs') }}(const uint8_t *sig, size_t siglen, const uint8_t *ph, size_t phlen, const uint8_t *ctx, size_t ctxlen, const uint8_t *pk, int hashalg);
+#endif
+{%- endfor %}
+
+OQS_API OQS_STATUS OQS_SIG_TEST_{{ family }}_{{ scheme['scheme'] }}_keypair_internal(uint8_t *public_key, uint8_t *secret_key, const uint8_t *seed) {
+{{- test_internal_dispatch('keypair_internal_oqs', 'public_key, secret_key, seed') }}
+}
+
+OQS_API OQS_STATUS OQS_SIG_TEST_{{ family }}_{{ scheme['scheme'] }}_sign_internal(uint8_t *signature, size_t *signature_len, const uint8_t *message, size_t message_len, const uint8_t *rnd, const uint8_t *secret_key) {
+{{- test_internal_dispatch('signature_internal_oqs', 'signature, signature_len, message, message_len, rnd, secret_key') }}
+}
+
+OQS_API OQS_STATUS OQS_SIG_TEST_{{ family }}_{{ scheme['scheme'] }}_verify_internal(const uint8_t *message, size_t message_len, const uint8_t *signature, size_t signature_len, const uint8_t *public_key) {
+{{- test_internal_dispatch('verify_internal_oqs', 'signature, signature_len, message, message_len, public_key') }}
+}
+
+OQS_API OQS_STATUS OQS_SIG_TEST_{{ family }}_{{ scheme['scheme'] }}_sign_prehash(uint8_t *signature, size_t *signature_len, const uint8_t *prehash, size_t prehash_len, const uint8_t *ctx_str, size_t ctx_str_len, OQS_SIG_TEST_prehash hash_alg, const uint8_t *rnd, const uint8_t *secret_key) {
+{{- test_internal_dispatch('signature_pre_hash_oqs', 'signature, signature_len, prehash, prehash_len, ctx_str, ctx_str_len, rnd, secret_key, (int) hash_alg') }}
+}
+
+OQS_API OQS_STATUS OQS_SIG_TEST_{{ family }}_{{ scheme['scheme'] }}_verify_prehash(const uint8_t *prehash, size_t prehash_len, const uint8_t *signature, size_t signature_len, const uint8_t *ctx_str, size_t ctx_str_len, OQS_SIG_TEST_prehash hash_alg, const uint8_t *public_key) {
+{{- test_internal_dispatch('verify_pre_hash_oqs', 'signature, signature_len, prehash, prehash_len, ctx_str, ctx_str_len, public_key, (int) hash_alg') }}
+}
+
+#endif /* OQS_ENABLE_TEST_INTERNAL_API */
 {%- endif %}
 #endif
 {% endfor -%}
