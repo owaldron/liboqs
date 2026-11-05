@@ -113,6 +113,10 @@ add_library(oqs kem/kem.c
                 ${SIG_STFL_OBJS}
                 ${COMMON_OBJS})
 
+if(OQS_ENABLE_TEST_INTERNAL_API)
+    target_sources(oqs PRIVATE kem/kem_test.c sig/sig_test.c)
+endif()
+
 # Internal library to be used only by test programs
 add_library(oqs-internal STATIC ${INTERNAL_OBJS})
 
