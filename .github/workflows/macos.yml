@@ -18,7 +18,7 @@ jobs:
           - -DOQS_ENABLE_SIG_SLH_DSA=OFF -DOQS_HAZARDOUS_EXPERIMENTAL_ENABLE_SIG_STFL_KEY_SIG_GEN=ON -DOQS_ENABLE_SIG_STFL_XMSS=ON -DOQS_ENABLE_SIG_STFL_LMS=ON
           - -DCMAKE_C_COMPILER=gcc-14
           - -DOQS_USE_OPENSSL=OFF
-          - -DBUILD_SHARED_LIBS=ON -DOQS_DIST_BUILD=OFF
+          - -DBUILD_SHARED_LIBS=ON -DOQS_DIST_BUILD=OFF -DOQS_ENABLE_TEST_INTERNAL_API=ON
         exclude:
           # Failing configuration on Github actions; see https://github.com/open-quantum-safe/liboqs/pull/2148
           - os: macos-15
