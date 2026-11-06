@@ -221,6 +221,9 @@ def test_wycheproof_vec_kem_encaps(kem_name):
         is_invalid_pk = not expected_c or not expected_k or "ModulusOverflow" in tc.get("flags", [])
         
         if is_invalid_pk and len(ek) == 2 * pk_len:
+            # The encapsulation key check is only reachable via the OQS_KEM_TEST_* API.
+            if not helpers.is_test_internal_api_enabled():
+                continue
             cmd = [
                 f"{build_dir}/tests/vectors_kem",
                 kem_name, "modOverflow", ek

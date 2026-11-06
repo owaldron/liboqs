@@ -203,6 +203,17 @@ def available_use_options_by_name():
 def is_use_option_enabled_by_name(name):
     return name in available_use_options_by_name()
 
+@functools.lru_cache()
+def is_build_option_enabled(option):
+    with open(os.path.join(get_current_build_dir_name(), 'include', 'oqs', 'oqsconfig.h')) as fh:
+        for line in fh:
+            if line.startswith('#define ') and line.split()[1] == option:
+                return True
+    return False
+
+def is_test_internal_api_enabled():
+    return is_build_option_enabled('OQS_ENABLE_TEST_INTERNAL_API')
+
 def get_kats(t):
     if kats[t] is None:
         with open(os.path.join('tests', 'KATs', t, 'kats.json'), 'r') as fp:

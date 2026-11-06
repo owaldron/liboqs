@@ -13,6 +13,9 @@
 
 #include <oqs/oqs.h>
 #include <oqs/sha3.h>
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
+#include <oqs/kem_test.h>
+#endif
 #include "oqs/common.h"
 #include "system_info.c"
 
@@ -25,21 +28,6 @@
 #define ML_KEM_Q                3329
 #define SHA3_256_OP_LEN         32
 #endif //OQS_ENABLE_KEM_ML_KEM
-
-#ifdef OQS_ENABLE_KEM_ml_kem_512
-extern int PQCP_MLKEM_NATIVE_MLKEM512_C_check_pk(const uint8_t *pk);
-extern int PQCP_MLKEM_NATIVE_MLKEM512_C_check_sk(const uint8_t *sk);
-#endif
-
-#ifdef OQS_ENABLE_KEM_ml_kem_768
-extern int PQCP_MLKEM_NATIVE_MLKEM768_C_check_pk(const uint8_t *pk);
-extern int PQCP_MLKEM_NATIVE_MLKEM768_C_check_sk(const uint8_t *sk);
-#endif
-
-#ifdef OQS_ENABLE_KEM_ml_kem_1024
-extern int PQCP_MLKEM_NATIVE_MLKEM1024_C_check_pk(const uint8_t *pk);
-extern int PQCP_MLKEM_NATIVE_MLKEM1024_C_check_sk(const uint8_t *sk);
-#endif
 
 /* MLKEM-specific functions */
 static inline bool is_ml_kem(const char *method_name) {
@@ -480,7 +468,18 @@ cleanup:
 	return rc;
 }
 
-#ifdef OQS_ENABLE_KEM_ML_KEM
+/* Returns true if the ML-KEM key-check test API is available; otherwise reports why not. */
+static bool internal_api_available(const char *test_name) {
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
+	(void)test_name;
+	return true;
+#else
+	fprintf(stderr, "[vectors_kem] %s requires liboqs built with -DOQS_ENABLE_TEST_INTERNAL_API=ON\n", test_name);
+	return false;
+#endif
+}
+
+#if defined(OQS_ENABLE_KEM_ML_KEM) && defined(OQS_ENABLE_TEST_INTERNAL_API)
 static OQS_STATUS kem_keyCheck_vector(const char *method_name,
                                       const uint8_t *key,
                                       bool expected_pass,
@@ -491,33 +490,17 @@ static OQS_STATUS kem_keyCheck_vector(const char *method_name,
 		return OQS_ERROR;
 	}
 
-	int result = 0;
-
-#ifdef OQS_ENABLE_KEM_ml_kem_512
-	if (!strcmp(method_name, OQS_KEM_alg_ml_kem_512)) {
-		result = is_pk ?
-		         PQCP_MLKEM_NATIVE_MLKEM512_C_check_pk(key) :
-		         PQCP_MLKEM_NATIVE_MLKEM512_C_check_sk(key);
+	OQS_KEM *kem = OQS_KEM_new(method_name);
+	if (kem == NULL || !OQS_KEM_TEST_supports_internal(method_name)) {
+		fprintf(stderr, "[vectors_kem] %s ERROR: key checks not supported!\n", method_name);
+		OQS_KEM_free(kem);
+		return OQS_ERROR;
 	}
-#endif
 
-#ifdef OQS_ENABLE_KEM_ml_kem_768
-	if (!strcmp(method_name, OQS_KEM_alg_ml_kem_768)) {
-		result = is_pk ?
-		         PQCP_MLKEM_NATIVE_MLKEM768_C_check_pk(key) :
-		         PQCP_MLKEM_NATIVE_MLKEM768_C_check_sk(key);
-	}
-#endif
+	OQS_STATUS rc = is_pk ? OQS_KEM_TEST_check_encaps_key(kem, key) : OQS_KEM_TEST_check_decaps_key(kem, key);
+	OQS_KEM_free(kem);
 
-#ifdef OQS_ENABLE_KEM_ml_kem_1024
-	if (!strcmp(method_name, OQS_KEM_alg_ml_kem_1024)) {
-		result = is_pk ?
-		         PQCP_MLKEM_NATIVE_MLKEM1024_C_check_pk(key) :
-		         PQCP_MLKEM_NATIVE_MLKEM1024_C_check_sk(key);
-	}
-#endif
-
-	return ((result == 0) == expected_pass) ? OQS_SUCCESS : OQS_ERROR;
+	return ((rc == OQS_SUCCESS) == expected_pass) ? OQS_SUCCESS : OQS_ERROR;
 }
 #endif
 
@@ -710,6 +693,10 @@ int main(int argc, char **argv) {
 
 		rc = kem_strcmp_vector(alg_name, strcmp_seed_bytes, strcmp_ek_bytes, strcmp_c_bytes, strcmp_k_bytes);
 	} else if (!strcmp(test_name, "modOverflow")) {
+		if (!internal_api_available(test_name)) {
+			rc = OQS_ERROR;
+			goto err;
+		}
 		modOverflow_ek = argv[3];
 
 		if (strlen(modOverflow_ek) != 2 * kem->length_public_key) {
@@ -727,11 +714,15 @@ int main(int argc, char **argv) {
 
 		hexStringToByteArray(modOverflow_ek,  modOverflow_ek_bytes);
 
-#ifdef OQS_ENABLE_KEM_ML_KEM
+#if defined(OQS_ENABLE_KEM_ML_KEM) && defined(OQS_ENABLE_TEST_INTERNAL_API)
 		/* For modOverflow tests, we expect the key to be corrupted (expected_pass = false) */
 		rc = kem_keyCheck_vector(alg_name, modOverflow_ek_bytes, false, true);
 #endif
 	} else if (!strcmp(test_name, "encapsulationKeyCheck") || !strcmp(test_name, "decapsulationKeyCheck")) {
+		if (!internal_api_available(test_name)) {
+			rc = OQS_ERROR;
+			goto err;
+		}
 		char *key_input = argv[3];
 		bool expected_pass = (strcmp(argv[4], "true") == 0);
 		// result will be 0 if key is valid, 1 if corrupted/invalid size
@@ -747,7 +738,7 @@ int main(int argc, char **argv) {
 			}
 			hexStringToByteArray(key_input, key_bytes);
 			// Step 2: If length is OK, perform sanity check
-#ifdef OQS_ENABLE_KEM_ML_KEM
+#if defined(OQS_ENABLE_KEM_ML_KEM) && defined(OQS_ENABLE_TEST_INTERNAL_API)
 			result = kem_keyCheck_vector(alg_name, key_bytes, true, !strcmp(test_name, "encapsulationKeyCheck"));
 #endif
 		} else {

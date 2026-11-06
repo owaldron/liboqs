@@ -12,6 +12,9 @@
 #include <sys/stat.h>
 
 #include <oqs/oqs.h>
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
+#include <oqs/sig_test.h>
+#endif
 
 #include "oqs/common.h"
 #include "system_info.c"
@@ -20,114 +23,6 @@
 #define MLDSA_RNDBYTES 32
 #define MLDSA_MULEN    64
 #define MAXCTXBYTES 255
-
-#ifdef OQS_ENABLE_SIG_ml_dsa_44
-extern int PQCP_MLDSA_NATIVE_MLDSA44_C_signature_internal(uint8_t *sig,
-        const uint8_t *m,
-        size_t mlen,
-        const uint8_t *pre,
-        size_t prelen,
-        const uint8_t rnd[MLDSA_RNDBYTES],
-        const uint8_t *sk,
-        int externalmu);
-
-extern int PQCP_MLDSA_NATIVE_MLDSA44_C_signature_pre_hash_internal(uint8_t *sig,
-        const uint8_t *ph,
-        size_t phlen,
-        const uint8_t *ctx,
-        size_t ctxlen,
-        const uint8_t rnd[MLDSA_RNDBYTES],
-        const uint8_t *sk,
-        int hashalg);
-
-extern int PQCP_MLDSA_NATIVE_MLDSA44_C_verify_internal(const uint8_t *sig,
-        const uint8_t *m,
-        size_t mlen,
-        const uint8_t *pre,
-        size_t prelen,
-        const uint8_t *pk,
-        int externalmu);
-
-extern int PQCP_MLDSA_NATIVE_MLDSA44_C_verify_pre_hash_internal(const uint8_t *sig,
-        const uint8_t *ph,
-        size_t phlen,
-        const uint8_t *ctx,
-        size_t ctxlen,
-        const uint8_t *pk,
-        int hashalg);
-#endif
-
-#ifdef OQS_ENABLE_SIG_ml_dsa_65
-extern int PQCP_MLDSA_NATIVE_MLDSA65_C_signature_internal(uint8_t *sig,
-        const uint8_t *m,
-        size_t mlen,
-        const uint8_t *pre,
-        size_t prelen,
-        const uint8_t rnd[MLDSA_RNDBYTES],
-        const uint8_t *sk,
-        int externalmu);
-
-extern int PQCP_MLDSA_NATIVE_MLDSA65_C_signature_pre_hash_internal(uint8_t *sig,
-        const uint8_t *ph,
-        size_t phlen,
-        const uint8_t *ctx,
-        size_t ctxlen,
-        const uint8_t rnd[MLDSA_RNDBYTES],
-        const uint8_t *sk,
-        int hashalg);
-
-extern int PQCP_MLDSA_NATIVE_MLDSA65_C_verify_internal(const uint8_t *sig,
-        const uint8_t *m,
-        size_t mlen,
-        const uint8_t *pre,
-        size_t prelen,
-        const uint8_t *pk,
-        int externalmu);
-
-extern int PQCP_MLDSA_NATIVE_MLDSA65_C_verify_pre_hash_internal(const uint8_t *sig,
-        const uint8_t *ph,
-        size_t phlen,
-        const uint8_t *ctx,
-        size_t ctxlen,
-        const uint8_t *pk,
-        int hashalg);
-#endif
-
-#ifdef OQS_ENABLE_SIG_ml_dsa_87
-extern int PQCP_MLDSA_NATIVE_MLDSA87_C_signature_internal(uint8_t *sig,
-        const uint8_t *m,
-        size_t mlen,
-        const uint8_t *pre,
-        size_t prelen,
-        const uint8_t rnd[MLDSA_RNDBYTES],
-        const uint8_t *sk,
-        int externalmu);
-
-extern int PQCP_MLDSA_NATIVE_MLDSA87_C_signature_pre_hash_internal(uint8_t *sig,
-        const uint8_t *ph,
-        size_t phlen,
-        const uint8_t *ctx,
-        size_t ctxlen,
-        const uint8_t rnd[MLDSA_RNDBYTES],
-        const uint8_t *sk,
-        int hashalg);
-
-extern int PQCP_MLDSA_NATIVE_MLDSA87_C_verify_internal(const uint8_t *sig,
-        const uint8_t *m,
-        size_t mlen,
-        const uint8_t *pre,
-        size_t prelen,
-        const uint8_t *pk,
-        int externalmu);
-
-extern int PQCP_MLDSA_NATIVE_MLDSA87_C_verify_pre_hash_internal(const uint8_t *sig,
-        const uint8_t *ph,
-        size_t phlen,
-        const uint8_t *ctx,
-        size_t ctxlen,
-        const uint8_t *pk,
-        int hashalg);
-#endif
 
 #ifdef OQS_ENABLE_SIG_SLH_DSA
 extern size_t slh_sign_internal(uint8_t *sig, const uint8_t *m, size_t m_sz,
@@ -270,32 +165,43 @@ static const slh_param_t *SLHDSA_param_set(const char *method_name) {
 }
 #endif
 
+/* Returns true if the ML-DSA internal/pre-hash test API is available; otherwise reports why not. */
+static bool internal_api_available(const char *test_name) {
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
+	(void)test_name;
+	return true;
+#else
+	fprintf(stderr, "[vectors_sig] %s requires liboqs built with -DOQS_ENABLE_TEST_INTERNAL_API=ON\n", test_name);
+	return false;
+#endif
+}
+
 int prehash_id_from_string(const char *s) {
-#if defined(OQS_ENABLE_SIG_ml_dsa_44) || defined(OQS_ENABLE_SIG_ml_dsa_65) || defined(OQS_ENABLE_SIG_ml_dsa_87)
+#if defined(OQS_ENABLE_TEST_INTERNAL_API) && (defined(OQS_ENABLE_SIG_ml_dsa_44) || defined(OQS_ENABLE_SIG_ml_dsa_65) || defined(OQS_ENABLE_SIG_ml_dsa_87))
 	if (!strcmp(s, "SHA2-224")) {
-		return 1;
+		return OQS_SIG_TEST_PREHASH_SHA2_224;
 	} else if (!strcmp(s, "SHA2-256")) {
-		return 2;
+		return OQS_SIG_TEST_PREHASH_SHA2_256;
 	} else if (!strcmp(s, "SHA2-384")) {
-		return 3;
+		return OQS_SIG_TEST_PREHASH_SHA2_384;
 	} else if (!strcmp(s, "SHA2-512")) {
-		return 4;
+		return OQS_SIG_TEST_PREHASH_SHA2_512;
 	} else if (!strcmp(s, "SHA2-512/224")) {
-		return 5;
+		return OQS_SIG_TEST_PREHASH_SHA2_512_224;
 	} else if (!strcmp(s, "SHA2-512/256")) {
-		return 6;
+		return OQS_SIG_TEST_PREHASH_SHA2_512_256;
 	} else if (!strcmp(s, "SHA3-224")) {
-		return 7;
+		return OQS_SIG_TEST_PREHASH_SHA3_224;
 	} else if (!strcmp(s, "SHA3-256")) {
-		return 8;
+		return OQS_SIG_TEST_PREHASH_SHA3_256;
 	} else if (!strcmp(s, "SHA3-384")) {
-		return 9;
+		return OQS_SIG_TEST_PREHASH_SHA3_384;
 	} else if (!strcmp(s, "SHA3-512")) {
-		return 10;
+		return OQS_SIG_TEST_PREHASH_SHA3_512;
 	} else if (!strcmp(s, "SHAKE-128")) {
-		return 11;
+		return OQS_SIG_TEST_PREHASH_SHAKE_128;
 	} else if (!strcmp(s, "SHAKE-256")) {
-		return 12;
+		return OQS_SIG_TEST_PREHASH_SHAKE_256;
 	}
 #else
 	(void)s;
@@ -366,7 +272,23 @@ static OQS_STATUS sig_kg_vector(const char *method_name,
 	} else {
 		ret = OQS_ERROR;
 		fprintf(stderr, "[vectors_sig] %s ERROR: public key or private key doesn't match!\n", method_name);
+		goto cleanup;
 	}
+
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
+	/* Cross-check deterministic key generation from the seed, independent of the RNG draw pattern. */
+	if (OQS_SIG_TEST_supports_internal(method_name)) {
+		rc = OQS_SIG_TEST_keypair_internal(sig, public_key, secret_key, prng_output_stream);
+		if (rc != OQS_SUCCESS) {
+			fprintf(stderr, "[vectors_sig] %s ERROR: OQS_SIG_TEST_keypair_internal failed!\n", method_name);
+			goto err;
+		}
+		if (memcmp(public_key, kg_pk, sig->length_public_key) || memcmp(secret_key, kg_sk, sig->length_secret_key)) {
+			fprintf(stderr, "[vectors_sig] %s ERROR: OQS_SIG_TEST_keypair_internal key doesn't match!\n", method_name);
+			goto err;
+		}
+	}
+#endif
 	goto cleanup;
 
 err:
@@ -415,30 +337,22 @@ static int sig_ver_vector_int(const char *method_name,
 		goto err;
 	}
 
-	if (is_ml_dsa(method_name) && sigLen != sig->length_signature) {
-		rc = 1; /* fixed-length signature: reject length mismatch */
-	} else if (!strcmp(method_name, "ML-DSA-44")) {
-#ifdef OQS_ENABLE_SIG_ml_dsa_44
-		rc = PQCP_MLDSA_NATIVE_MLDSA44_C_verify_internal(sigVer_sig_bytes, sigVer_msg_bytes, msgLen, NULL, 0, sigVer_pk_bytes, 0);
-#endif
-	} else if (!strcmp(method_name, "ML-DSA-65")) {
-#ifdef OQS_ENABLE_SIG_ml_dsa_65
-		rc = PQCP_MLDSA_NATIVE_MLDSA65_C_verify_internal(sigVer_sig_bytes, sigVer_msg_bytes, msgLen, NULL, 0, sigVer_pk_bytes, 0);
-#endif
-	} else if (!strcmp(method_name, "ML-DSA-87")) {
-#ifdef OQS_ENABLE_SIG_ml_dsa_87
-		rc = PQCP_MLDSA_NATIVE_MLDSA87_C_verify_internal(sigVer_sig_bytes, sigVer_msg_bytes, msgLen, NULL, 0, sigVer_pk_bytes, 0);
-#endif
-	} else if (!strncmp(method_name, "SLH_DSA", 7)) {
+	if (!strncmp(method_name, "SLH_DSA", 7)) {
 #ifdef OQS_ENABLE_SIG_SLH_DSA
 		const slh_param_t *param_set = SLHDSA_param_set(method_name);
 		rc = (slh_verify_internal(sigVer_msg_bytes, msgLen, sigVer_sig_bytes, sigLen, sigVer_pk_bytes, param_set) != 0 ? 0 : 1);
+#endif
+	} else if (is_ml_dsa(method_name) && internal_api_available("sigVer_int")) {
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
+		rc = (OQS_SIG_TEST_verify_internal(sig, sigVer_msg_bytes, msgLen, sigVer_sig_bytes, sigLen, sigVer_pk_bytes) == OQS_SUCCESS) ? 0 : 1;
+#else
+		(void)sigLen;
 #endif
 	} else {
 		goto err;
 	}
 	if ((!rc) != testPassed) {
-		fprintf(stderr, "[vectors_sig] %s ERROR: ml_dsa_verify_internal failed!\n", method_name);
+		fprintf(stderr, "[vectors_sig] %s ERROR: verify_internal failed!\n", method_name);
 		goto err;
 	} else {
 		ret = EXIT_SUCCESS;
@@ -581,6 +495,7 @@ cleanup:
 }
 #endif
 
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
 /* signature verification prehash APIs with context tests */
 static int sig_ver_prehash_vector_ext(const char *method_name,
                                       const uint8_t *sigVer_pk_bytes,
@@ -610,25 +525,13 @@ static int sig_ver_prehash_vector_ext(const char *method_name,
 
 	fh = stdout;
 
-	if (is_ml_dsa(method_name) && sigLen != sig->length_signature) {
-		rc = 1; /* fixed-length signature: reject length mismatch */
-	} else if (!strcmp(method_name, "ML-DSA-44")) {
-#ifdef OQS_ENABLE_SIG_ml_dsa_44
-		rc = PQCP_MLDSA_NATIVE_MLDSA44_C_verify_pre_hash_internal(sigVer_sig_bytes, sigVer_msg_bytes, msgLen, sigVer_ctx, sigVer_ctxLen, sigVer_pk_bytes, hashalg);
-#endif
-	} else if (!strcmp(method_name, "ML-DSA-65")) {
-#ifdef OQS_ENABLE_SIG_ml_dsa_65
-		rc = PQCP_MLDSA_NATIVE_MLDSA65_C_verify_pre_hash_internal(sigVer_sig_bytes, sigVer_msg_bytes, msgLen, sigVer_ctx, sigVer_ctxLen, sigVer_pk_bytes, hashalg);
-#endif
-	} else if (!strcmp(method_name, "ML-DSA-87")) {
-#ifdef OQS_ENABLE_SIG_ml_dsa_87
-		rc = PQCP_MLDSA_NATIVE_MLDSA87_C_verify_pre_hash_internal(sigVer_sig_bytes, sigVer_msg_bytes, msgLen, sigVer_ctx, sigVer_ctxLen, sigVer_pk_bytes, hashalg);
-#endif
+	if (is_ml_dsa(method_name)) {
+		rc = (OQS_SIG_TEST_verify_prehash(sig, sigVer_msg_bytes, msgLen, sigVer_sig_bytes, sigLen, sigVer_ctx, sigVer_ctxLen, (OQS_SIG_TEST_prehash) hashalg, sigVer_pk_bytes) == OQS_SUCCESS) ? 0 : 1;
 	} else {
 		goto err;
 	}
 	if ((!rc) != testPassed) {
-		fprintf(stderr, "[vectors_sig] %s ERROR: mldsa_prehash_verify_internal API failed!\n", method_name);
+		fprintf(stderr, "[vectors_sig] %s ERROR: OQS_SIG_TEST_verify_prehash failed!\n", method_name);
 		goto err;
 	} else {
 		ret = EXIT_SUCCESS;
@@ -649,6 +552,7 @@ cleanup:
 	OQS_SIG_free(sig);
 	return ret;
 }
+#endif
 #endif
 
 /* signature generation internal API tests */
@@ -684,22 +588,14 @@ static int sig_gen_vector_int(const char *method_name,
 		goto err;
 	}
 
-	if (!strcmp(method_name, "ML-DSA-44")) {
-#ifdef OQS_ENABLE_SIG_ml_dsa_44
-		rc = PQCP_MLDSA_NATIVE_MLDSA44_C_signature_internal(signature, sigGen_msg, sigGen_msgLen, NULL, 0, prng_output_stream, sigGen_sk, 0);
-#endif
-	} else if (!strcmp(method_name, "ML-DSA-65")) {
-#ifdef OQS_ENABLE_SIG_ml_dsa_65
-		rc = PQCP_MLDSA_NATIVE_MLDSA65_C_signature_internal(signature, sigGen_msg, sigGen_msgLen, NULL, 0, prng_output_stream, sigGen_sk, 0);
-#endif
-	} else if (!strcmp(method_name, "ML-DSA-87")) {
-#ifdef OQS_ENABLE_SIG_ml_dsa_87
-		rc = PQCP_MLDSA_NATIVE_MLDSA87_C_signature_internal(signature, sigGen_msg, sigGen_msgLen, NULL, 0, prng_output_stream, sigGen_sk, 0);
-#endif
-	} else if (!strncmp(method_name, "SLH_DSA", 7)) {
+	if (!strncmp(method_name, "SLH_DSA", 7)) {
 #ifdef OQS_ENABLE_SIG_SLH_DSA
 		const slh_param_t *param_set = SLHDSA_param_set(method_name);
 		rc = ((int) slh_sign_internal(signature, sigGen_msg, sigGen_msgLen, sigGen_sk, prng_output_stream, param_set) > 0) ? 0 : 1;
+#endif
+	} else if (is_ml_dsa(method_name) && internal_api_available("sigGen_int")) {
+#if defined(OQS_ENABLE_TEST_INTERNAL_API)
+		rc = (OQS_SIG_TEST_sign_internal(sig, signature, &sigLen, sigGen_msg, sigGen_msgLen, prng_output_stream, sigGen_sk) == OQS_SUCCESS) ? 0 : 1;
 #endif
 	} else {
 		goto err;
@@ -923,7 +819,7 @@ cleanup:
 }
 #endif
 
-#if defined(OQS_ENABLE_SIG_ml_dsa_44) || defined(OQS_ENABLE_SIG_ml_dsa_65) || defined(OQS_ENABLE_SIG_ml_dsa_87)
+#if defined(OQS_ENABLE_TEST_INTERNAL_API) && (defined(OQS_ENABLE_SIG_ml_dsa_44) || defined(OQS_ENABLE_SIG_ml_dsa_65) || defined(OQS_ENABLE_SIG_ml_dsa_87))
 /* signature generation pre-hash external APIs with context tests */
 static int sig_gen_prehash_vector_ext(const char *method_name,
                                       uint8_t *prng_output_stream,
@@ -935,15 +831,11 @@ static int sig_gen_prehash_vector_ext(const char *method_name,
                                       const uint8_t *sigGen_sig,
                                       int algo_name) {
 
-	uint8_t *entropy_input;
 	FILE *fh = NULL;
 	uint8_t *signature = NULL;
 	OQS_SIG *sig = NULL;
 	int rc = -1, ret = -1;
 	size_t sigLen;
-
-	void (*randombytes_init)(const uint8_t *, const uint8_t *) = NULL;
-	void (*randombytes_free)(void) = NULL;
 
 	sig = OQS_SIG_new(method_name);
 	if (sig == NULL) {
@@ -951,17 +843,10 @@ static int sig_gen_prehash_vector_ext(const char *method_name,
 		goto algo_not_enabled;
 	}
 
-	if (is_ml_dsa(method_name)) {
-		OQS_randombytes_custom_algorithm(&MLDSA_randombytes);
-		randombytes_init = &MLDSA_randombytes_init;
-		randombytes_free = &MLDSA_randombytes_free;
-		entropy_input = (uint8_t *) prng_output_stream;
-	} else {
+	if (!is_ml_dsa(method_name)) {
 		// Only ML-DSA supported
 		goto err;
 	}
-
-	randombytes_init(entropy_input, NULL);
 
 	sigLen = sig->length_signature;
 
@@ -979,23 +864,9 @@ static int sig_gen_prehash_vector_ext(const char *method_name,
 		goto err;
 	}
 
-	if (!strcmp(method_name, "ML-DSA-44")) {
-#ifdef OQS_ENABLE_SIG_ml_dsa_44
-		rc = PQCP_MLDSA_NATIVE_MLDSA44_C_signature_pre_hash_internal(signature, sigGen_msg, sigGen_msgLen, sigGen_ctx, sigGen_ctxLen, prng_output_stream, sigGen_sk, algo_name);
-#endif
-	} else if (!strcmp(method_name, "ML-DSA-65")) {
-#ifdef OQS_ENABLE_SIG_ml_dsa_65
-		rc = PQCP_MLDSA_NATIVE_MLDSA65_C_signature_pre_hash_internal(signature, sigGen_msg, sigGen_msgLen, sigGen_ctx, sigGen_ctxLen, prng_output_stream, sigGen_sk, algo_name);
-#endif
-	} else if (!strcmp(method_name, "ML-DSA-87")) {
-#ifdef OQS_ENABLE_SIG_ml_dsa_87
-		rc = PQCP_MLDSA_NATIVE_MLDSA87_C_signature_pre_hash_internal(signature, sigGen_msg, sigGen_msgLen, sigGen_ctx, sigGen_ctxLen, prng_output_stream, sigGen_sk, algo_name);
-#endif
-	} else {
-		goto err;
-	}
+	rc = (OQS_SIG_TEST_sign_prehash(sig, signature, &sigLen, sigGen_msg, sigGen_msgLen, sigGen_ctx, sigGen_ctxLen, (OQS_SIG_TEST_prehash) algo_name, prng_output_stream, sigGen_sk) == OQS_SUCCESS) ? 0 : 1;
 	if (rc) {
-		fprintf(stderr, "[vectors_sig] %s ERROR: mldsa_verify_prehash_internal failed!\n", method_name);
+		fprintf(stderr, "[vectors_sig] %s ERROR: OQS_SIG_TEST_sign_prehash failed!\n", method_name);
 		goto err;
 	}
 	fprintBstr(fh, "signature: ", signature, sig->length_signature);
@@ -1017,9 +888,6 @@ algo_not_enabled:
 
 cleanup:
 	OQS_MEM_insecure_free(signature);
-	if (randombytes_free != NULL) {
-		randombytes_free();
-	}
 	OQS_SIG_free(sig);
 	return ret;
 }
@@ -1317,6 +1185,9 @@ int main(int argc, char **argv) {
 #endif
 
 	} else if (!strcmp(test_name, "sigGen_prehash_ext")) {
+		if (!internal_api_available(test_name)) {
+			goto err;
+		}
 		/* vectors_sig alg_name sigGen_ext sk message signature context rnd algname ---> (argc 9) */
 		if (argc != 9) {
 			valid_args = false;
@@ -1335,7 +1206,7 @@ int main(int argc, char **argv) {
 		        strlen(prng_output_stream) != 2 * MLDSA_RNDBYTES ||
 		        strlen(sigGen_sk) != 2 * sig->length_secret_key ||
 		        strlen(sigGen_ctx) > 2 * MAXCTXBYTES ||
-		        (prehash_id < 1 || prehash_id > 12)) {
+		        prehash_id < 0) {
 			printf("lengths bad or incorrect hash algo constant \n");
 			goto err;
 		}
@@ -1367,7 +1238,7 @@ int main(int argc, char **argv) {
 			hexStringToByteArray(sigGen_ctx, sigGen_ctx_bytes);
 		}
 
-#if defined(OQS_ENABLE_SIG_ml_dsa_44) || defined(OQS_ENABLE_SIG_ml_dsa_65) || defined(OQS_ENABLE_SIG_ml_dsa_87)
+#if defined(OQS_ENABLE_TEST_INTERNAL_API) && (defined(OQS_ENABLE_SIG_ml_dsa_44) || defined(OQS_ENABLE_SIG_ml_dsa_65) || defined(OQS_ENABLE_SIG_ml_dsa_87))
 		rc = sig_gen_prehash_vector_ext(alg_name, prng_output_stream_bytes, sigGen_sk_bytes, sigGen_msg_bytes, msgLen, sigGen_ctx_bytes, ctxlen, sigGen_sig_bytes, prehash_id);
 #else
 		rc = EXIT_SUCCESS;
@@ -1539,6 +1410,9 @@ int main(int argc, char **argv) {
 #endif
 
 	} else if (!strcmp(test_name, "sigVer_prehash_ext")) {
+		if (!internal_api_available(test_name)) {
+			goto err;
+		}
 		/* vectors_sig alg_name sigVer_int pk message signature context testPassed algname---> (argc 9) */
 		if (argc != 9) {
 			valid_args = false;
@@ -1557,7 +1431,7 @@ int main(int argc, char **argv) {
 		        strlen(sigVer_pk) != 2 * sig->length_public_key ||
 		        strlen(sigVer_ctx) > 2 * MAXCTXBYTES ||
 		        (sigVerPassed != 0 && sigVerPassed != 1) ||
-		        (prehash_id < 1 || prehash_id > 12)) {
+		        prehash_id < 0) {
 			printf("lengths bad or incorrect verification status or incorrect hash algo constant \n");
 			goto err;
 		}
@@ -1587,7 +1461,7 @@ int main(int argc, char **argv) {
 			hexStringToByteArray(sigVer_ctx, sigVer_ctx_bytes);
 		}
 
-#if defined(OQS_ENABLE_SIG_ml_dsa_44) || defined(OQS_ENABLE_SIG_ml_dsa_65) || defined(OQS_ENABLE_SIG_ml_dsa_87)
+#if defined(OQS_ENABLE_TEST_INTERNAL_API) && (defined(OQS_ENABLE_SIG_ml_dsa_44) || defined(OQS_ENABLE_SIG_ml_dsa_65) || defined(OQS_ENABLE_SIG_ml_dsa_87))
 		rc = sig_ver_prehash_vector_ext(alg_name, sigVer_pk_bytes, sigVer_msg_bytes, msgLen, sigVer_sig_bytes, strlen(sigVer_sig) / 2, sigVer_ctx_bytes, ctxlen, sigVerPassed, prehash_id) ;
 #else
 		rc = EXIT_SUCCESS;

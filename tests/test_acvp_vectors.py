@@ -65,6 +65,16 @@ def calc_hash(msg, algo):
         raise ValueError(f"Unsupported hash algorithm: {algo}")
 
 
+INTERNAL_API_SKIP_REASON = "Requires liboqs built with -DOQS_ENABLE_TEST_INTERNAL_API=ON"
+
+
+def ml_dsa_variant_needs_internal_api(variant):
+    """ML-DSA.Sign_internal/Verify_internal and HashML-DSA are only reachable via OQS_SIG_TEST_*."""
+    internal_pure = variant["signatureInterface"] == "internal" and not variant["externalMu"]
+    external_prehash = variant["signatureInterface"] == "external" and variant["preHash"] == "preHash"
+    return internal_pure or external_prehash
+
+
 @helpers.filtered_test
 @pytest.mark.parametrize("kem_name", helpers.available_kems_by_name())
 def test_acvp_vec_kem_keygen(kem_name):
@@ -200,6 +210,8 @@ def test_acvp_vec_kem_key_check(kem_name):
         pytest.skip("Not enabled")
     if not (kem_name in ml_kem):
         pytest.skip("Not supported")
+    if not helpers.is_test_internal_api_enabled():
+        pytest.skip(INTERNAL_API_SKIP_REASON)
 
     resp = cached_requests_get(ml_kem_encdec) 
     assert resp.status_code == 200
@@ -288,6 +300,8 @@ def test_acvp_vec_ml_dsa_sig_gen(sig_name):
     for variant in ml_sig_sig_acvp["testGroups"]:
         if variant["parameterSet"] == sig_name:
             variantFound = True
+            if ml_dsa_variant_needs_internal_api(variant) and not helpers.is_test_internal_api_enabled():
+                continue
             for testCase in variant["tests"]:
                 sk = testCase["sk"]
                 # check if its internal API. if yes, check for external mu
@@ -385,6 +399,8 @@ def test_acvp_vec_ml_dsa_sig_ver(sig_name):
     for variant in ml_sig_sig_acvp["testGroups"]:
         if variant["parameterSet"] == sig_name:
             variantFound = True
+            if ml_dsa_variant_needs_internal_api(variant) and not helpers.is_test_internal_api_enabled():
+                continue
             for testCase in variant["tests"]:
                 # check if its internal API. if yes, check for external mu
                 if variant["signatureInterface"] == "internal":
