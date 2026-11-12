@@ -318,6 +318,38 @@ jobs:
         timeout-minutes: 90
         run: mkdir -p tmp && SLH_DSA_LEAK_TEST=1 python3 -m pytest --verbose --numprocesses=auto tests/test_leaks.py::test_slhdsa_leak ${{ matrix.PYTEST_ARGS }}
 
+  # Leak tests for the noble-memopt and jammy-clang configurations of linux.yml,
+  # moved here to keep per-PR CI under its time limit. Scheduled and manual runs
+  # skip nothing in tests/test_leaks.py (MQOM, QR-UOV and FAEST included).
+  linux-leak-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: noble-memopt
+            container: openquantumsafe/ci-ubuntu-latest:latest
+            CMAKE_ARGS: -DOQS_STRICT_WARNINGS=ON -DOQS_MEMOPT_BUILD=ON
+          - name: jammy-clang
+            container: openquantumsafe/ci-ubuntu-jammy:latest
+            CMAKE_ARGS: -DOQS_STRICT_WARNINGS=ON -DCMAKE_C_COMPILER=clang
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.container }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # pin@v4
+      - name: Configure
+        run: mkdir build && cd build && cmake -GNinja ${{ matrix.CMAKE_ARGS }} .. && cmake -LA -N ..
+      - name: Build
+        run: ninja
+        working-directory: build
+      - name: Run leak tests
+        timeout-minutes: 240
+        env:
+          # Fast FAEST variants only; slow "s" sets remain skipped until FAEST CI time is trimmed.
+          SKIP_ALGS: 'FAEST-.*S'
+        run: mkdir -p tmp && python3 -m pytest --verbose --numprocesses=logical --dist load --maxschedchunk=1 --durations=25 tests/test_leaks.py
+
   address-sanitizer-slhdsa:
     strategy:
       fail-fast: false
